@@ -1,0 +1,17 @@
+bin/
+obj/
+out/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/
+packages/
+*.nupkg
+*.snupkg
+logs/
+*.log
+*.tmp
+*.temp
+.containers

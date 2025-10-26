@@ -1,0 +1,33 @@
+services:
+  10xcards:
+    image: ${DOCKER_REGISTRY-}10xcards
+    container_name: 10xCards.WebApp
+    build:
+      context: .
+      dockerfile: 10xCards/Dockerfile
+    depends_on:
+      - 10xcards.database.postgres
+
+  10xcards.database.postgres:
+    image: postgres:latest
+    container_name: 10xCards.DB.Postgres
+    environment:
+      - POSTGRES_DB=10xCards
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./.containers/10xcards-db-postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  10xcards.pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: 10xCards.PgAdmin    
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 1234Qwer
+    volumes:
+      - ./.containers/10xcards-pgadmin:/var/lib/pgadmin       
+    ports:
+      - "8888:80" 
+

@@ -1,0 +1,50 @@
+---
+alwaysApply: false
+globs: '**/*.razor'
+---
+
+## Frontend
+
+### General Guidelines
+
+- Shared/*Layout.razor — application structure (navbar, sidebar, footer).
+- Pages/*.razor — routable views defined with @page.
+- Components/*.razor — reusable, non-routable UI pieces.
+- Components and parameters in PascalCase.
+- Event parameters follow the OnXxx pattern and use EventCallback (not Action).
+- Keep UI markup in .razor, move logic to code-behind: Component.razor.cs (partial class).
+- Prefer dependency injection over statics/singletons.
+- Local UI state stays in the component; shared state via scoped services or CascadingParameter.
+- Parent–child communication via EventCallback and parameters.
+
+### Performance & Rendering
+- Use <Virtualize> for long lists.
+- Provide stable keys in loops: @key item.Id.
+- Avoid unnecessary state changes; override ShouldRender only when it clearly reduces renders.
+- Prefer OnInitializedAsync over OnInitialized for async work.
+- Use RenderFragment/RenderFragment<T> for flexible, composable UIs.
+
+### Guidelines for Styling
+
+#### Bootstrap
+
+- Implement dark mode with the data-bs-theme="dark"
+- Customize with Bootstrap CSS variables; avoid heavy overrides of core CSS
+- Use responsive variants (sm:, md:, lg:, etc.) for adaptive designs
+- Leverage state variants (hover:, focus:, active:, etc.) for interactive elements
+- Scope component styles with Component.razor.css.
+- Keep theme variables in :root and [data-bs-theme=dark].
+
+### Guidelines for Accessibility
+
+#### ARIA Best Practices
+
+- Use ARIA landmarks to identify regions of the page (main, navigation, search, etc.)
+- Apply appropriate ARIA roles to custom interface elements that lack semantic HTML equivalents
+- Set aria-expanded and aria-controls for expandable content like accordions and dropdowns
+- Use aria-live regions with appropriate politeness settings for dynamic content updates
+- Implement aria-hidden to hide decorative or duplicative content from screen readers
+- Apply aria-label or aria-labelledby for elements without visible text labels
+- Use aria-describedby to associate descriptive text with form inputs or complex elements
+- Implement aria-current for indicating the current item in a set, navigation, or process
+- Avoid redundant ARIA that duplicates the semantics of native HTML elements
