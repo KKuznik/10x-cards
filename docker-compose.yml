@@ -25,7 +25,7 @@ services:
     container_name: 10xCards.PgAdmin    
     environment:
       PGADMIN_DEFAULT_EMAIL: pgadmin@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 1234Qwer
+      PGADMIN_DEFAULT_PASSWORD: pgadmin1234
     volumes:
       - ./.containers/10xcards-pgadmin:/var/lib/pgadmin       
     ports:

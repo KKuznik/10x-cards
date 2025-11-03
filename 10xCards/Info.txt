@@ -1,0 +1,6 @@
+PgAdmin
+http://localhost:8888/
+
+**MIGRATIONS**
+
+Add-Migration Initial -Context ApplicationDbContext -OutputDir "Database/Migrations"
