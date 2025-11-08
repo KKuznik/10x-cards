@@ -1,0 +1,219 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+### Also replace {{flashcardId}} with an actual flashcard ID from your database
+@token = your_jwt_token_here
+@baseUrl = http://localhost:8080
+@flashcardId = 1
+
+### Test 1: Get Existing Flashcard Successfully (Should return 200)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 2: Get Non-Existent Flashcard (Should fail with 404)
+GET {{baseUrl}}/api/flashcards/999999
+Authorization: Bearer {{token}}
+
+###
+
+### Test 3: Get Flashcard without Authorization Header (Should fail with 401)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+
+###
+
+### Test 4: Get Flashcard with Invalid Token (Should fail with 401)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer invalid_token_here
+
+###
+
+### Test 5: Get Flashcard with Malformed Token (Should fail with 401)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer malformed.token.value
+
+###
+
+### Test 6: Get Flashcard with Invalid ID Format - String (Should fail with 400)
+GET {{baseUrl}}/api/flashcards/invalid_id
+Authorization: Bearer {{token}}
+
+###
+
+### Test 7: Get Flashcard with Invalid ID Format - Special Characters (Should fail with 400)
+GET {{baseUrl}}/api/flashcards/@#$%
+Authorization: Bearer {{token}}
+
+###
+
+### Test 8: Get Flashcard with Negative ID (Should fail with 404)
+GET {{baseUrl}}/api/flashcards/-1
+Authorization: Bearer {{token}}
+
+###
+
+### Test 9: Get Flashcard with Zero ID (Should fail with 404)
+GET {{baseUrl}}/api/flashcards/0
+Authorization: Bearer {{token}}
+
+###
+
+### Test 10: Get Flashcard with Very Large ID (Should fail with 404)
+GET {{baseUrl}}/api/flashcards/9999999999999
+Authorization: Bearer {{token}}
+
+###
+
+### Test 11: Get Flashcard - Verify Response Structure
+# Should return: id, front, back, source, createdAt, updatedAt, generationId
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 12: Get Flashcard with Expired Token (Should fail with 401)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwMDAwMDB9.expired
+
+###
+
+### Test 13: Get Flashcard without Bearer Prefix (Should fail with 401)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: {{token}}
+
+###
+
+### Test 14: Get Flashcard with Wrong Authorization Scheme (Should fail with 401)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Basic {{token}}
+
+###
+
+### Test 15: Get Flashcard with Extra Query Parameters (Should succeed and ignore extras)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}?extra=param&another=value
+Authorization: Bearer {{token}}
+
+###
+
+### Preparation: Create a Manual Flashcard for Testing
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test Question for GET endpoint",
+  "back": "Test Answer for GET endpoint"
+}
+
+###
+
+### Test 16: Get Flashcard with Source='manual' - Verify Fields
+# Use the ID from the created flashcard above
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Preparation: Create Flashcard from AI Generation (if generation exists)
+# First, you need to have a generation with ID, then create batch flashcards
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": 1,
+  "flashcards": [
+    {
+      "front": "What is AI?",
+      "back": "Artificial Intelligence",
+      "source": "ai-full"
+    },
+    {
+      "front": "What is ML?",
+      "back": "Machine Learning - edited",
+      "source": "ai-edited"
+    }
+  ]
+}
+
+###
+
+### Test 17: Get Flashcard with Source='ai-full' - Verify generationId Present
+# Use the ID from the ai-full flashcard created above
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 18: Get Flashcard with Source='ai-edited' - Verify generationId Present
+# Use the ID from the ai-edited flashcard created above
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 19: Get Another User's Flashcard (Should fail with 404)
+# Note: You need to create a flashcard with a different user account
+# and try to access it with the current user's token
+# The endpoint should return 404 (not 403) to avoid revealing existence
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 20: Get Flashcard - Complete Workflow Test
+# Step 1: Create a new flashcard
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Workflow Test Question",
+  "back": "Workflow Test Answer"
+}
+
+###
+
+# Step 2: Get the created flashcard (use the ID from response above)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+# Step 3: Verify the flashcard appears in the list
+GET {{baseUrl}}/api/flashcards?search=Workflow+Test
+Authorization: Bearer {{token}}
+
+###
+
+### Test 21: Get Flashcard with Case Sensitive URL (Should work - HTTP is case-insensitive for domain)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 22: Get Flashcard - SQL Injection Attempt in ID (Should fail safely)
+GET {{baseUrl}}/api/flashcards/1' OR '1'='1
+Authorization: Bearer {{token}}
+
+###
+
+### Test 23: Get Flashcard - XSS Attempt in ID (Should fail safely)
+GET {{baseUrl}}/api/flashcards/<script>alert('xss')</script>
+Authorization: Bearer {{token}}
+
+###
+
+### Test 24: Get Flashcard - Check Timestamp Formats
+# Verify that createdAt and updatedAt are in ISO 8601 format
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 25: Get Flashcard - Check All Fields Present
+# Verify response contains: id, front, back, source, createdAt, updatedAt, generationId (can be null)
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+

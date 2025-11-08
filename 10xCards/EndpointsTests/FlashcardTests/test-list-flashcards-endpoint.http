@@ -1,0 +1,171 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+@token = your_jwt_token_here
+@baseUrl = http://localhost:8080
+
+### Test 1: Basic List - Get all flashcards (default pagination)
+GET {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+
+###
+
+### Test 2: Pagination - Page 1 with 10 items
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+###
+
+### Test 3: Pagination - Page 2 with 5 items
+GET {{baseUrl}}/api/flashcards?page=2&pageSize=5
+Authorization: Bearer {{token}}
+
+###
+
+### Test 4: Filter by source - AI Full
+GET {{baseUrl}}/api/flashcards?source=ai-full
+Authorization: Bearer {{token}}
+
+###
+
+### Test 5: Filter by source - AI Edited
+GET {{baseUrl}}/api/flashcards?source=ai-edited
+Authorization: Bearer {{token}}
+
+###
+
+### Test 6: Filter by source - Manual
+GET {{baseUrl}}/api/flashcards?source=manual
+Authorization: Bearer {{token}}
+
+###
+
+### Test 7: Search - Find flashcards containing specific text
+GET {{baseUrl}}/api/flashcards?search=France
+Authorization: Bearer {{token}}
+
+###
+
+### Test 8: Sort by front (ascending)
+GET {{baseUrl}}/api/flashcards?sortBy=front&sortOrder=asc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 9: Sort by front (descending)
+GET {{baseUrl}}/api/flashcards?sortBy=front&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 10: Sort by updatedAt (ascending)
+GET {{baseUrl}}/api/flashcards?sortBy=updatedAt&sortOrder=asc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 11: Sort by updatedAt (descending)
+GET {{baseUrl}}/api/flashcards?sortBy=updatedAt&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 12: Sort by createdAt (ascending)
+GET {{baseUrl}}/api/flashcards?sortBy=createdAt&sortOrder=asc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 13: Sort by createdAt (descending) - Default
+GET {{baseUrl}}/api/flashcards?sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 14: Combined filters - source + search
+GET {{baseUrl}}/api/flashcards?source=manual&search=test
+Authorization: Bearer {{token}}
+
+###
+
+### Test 15: Combined filters - pagination + sorting
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=5&sortBy=front&sortOrder=asc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 16: Combined filters - all parameters
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=10&source=ai-full&sortBy=createdAt&sortOrder=desc&search=example
+Authorization: Bearer {{token}}
+
+###
+
+### Test 17: Empty result - page beyond total pages
+GET {{baseUrl}}/api/flashcards?page=999
+Authorization: Bearer {{token}}
+
+###
+
+### Test 18: Unauthorized - No token (Should fail with 401)
+GET {{baseUrl}}/api/flashcards
+
+###
+
+### Test 19: Invalid pageSize - Too large (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?pageSize=101
+Authorization: Bearer {{token}}
+
+###
+
+### Test 20: Invalid pageSize - Zero (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?pageSize=0
+Authorization: Bearer {{token}}
+
+###
+
+### Test 21: Invalid page - Zero (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?page=0
+Authorization: Bearer {{token}}
+
+###
+
+### Test 22: Invalid page - Negative (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?page=-1
+Authorization: Bearer {{token}}
+
+###
+
+### Test 23: Invalid source (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?source=invalid-source
+Authorization: Bearer {{token}}
+
+###
+
+### Test 24: Invalid sortBy (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?sortBy=invalidField
+Authorization: Bearer {{token}}
+
+###
+
+### Test 25: Invalid sortOrder (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?sortOrder=invalid
+Authorization: Bearer {{token}}
+
+###
+
+### Test 26: Search query too long - Over 200 characters (Should fail with 400)
+GET {{baseUrl}}/api/flashcards?search=ThisIsAVeryLongSearchQueryThatExceedsTheMaximumAllowedLengthOf200CharactersThisIsAVeryLongSearchQueryThatExceedsTheMaximumAllowedLengthOf200CharactersThisIsAVeryLongSearchQueryThatExceedsTheMaximumAllowedLengthOf200Characters
+Authorization: Bearer {{token}}
+
+###
+
+### Test 27: Edge case - Page size at maximum (100)
+GET {{baseUrl}}/api/flashcards?pageSize=100
+Authorization: Bearer {{token}}
+
+###
+
+### Test 28: Edge case - Page size at minimum (1)
+GET {{baseUrl}}/api/flashcards?pageSize=1
+Authorization: Bearer {{token}}
+
+###
+

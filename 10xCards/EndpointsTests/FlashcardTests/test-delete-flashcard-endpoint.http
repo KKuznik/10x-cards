@@ -1,0 +1,177 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+### IMPORTANT: Replace {{flashcardId}} with an actual flashcard ID from your database
+@token = your_jwt_token_here
+@baseUrl = http://localhost:8080
+@flashcardId = 1
+
+### Test 1: Delete existing flashcard (Should return 204 No Content)
+DELETE {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 2: Delete non-existent flashcard (Should return 404 Not Found)
+DELETE {{baseUrl}}/api/flashcards/999999
+Authorization: Bearer {{token}}
+
+###
+
+### Test 3: Delete without authentication (Should return 401 Unauthorized)
+DELETE {{baseUrl}}/api/flashcards/{{flashcardId}}
+
+###
+
+### Test 4: Delete with invalid token (Should return 401 Unauthorized)
+DELETE {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer invalid_token_here
+
+###
+
+### Test 5: Delete with malformed authorization header (Should return 401 Unauthorized)
+DELETE {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: invalid_format
+
+###
+
+### Test 6: Delete with invalid flashcard ID format - letters (Should return 404 or 400)
+DELETE {{baseUrl}}/api/flashcards/abc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 7: Delete with invalid flashcard ID - negative number (Should return 404 or 400)
+DELETE {{baseUrl}}/api/flashcards/-1
+Authorization: Bearer {{token}}
+
+###
+
+### Test 8: Delete with invalid flashcard ID - zero (Should return 404 or 400)
+DELETE {{baseUrl}}/api/flashcards/0
+Authorization: Bearer {{token}}
+
+###
+
+### Test 9: Create a flashcard then immediately delete it (Should return 201 then 204)
+# First create
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Temporary flashcard for delete test",
+  "back": "This will be deleted immediately"
+}
+
+### Note: Copy the ID from the response above and use it in the delete request below
+
+### Delete the flashcard created above
+DELETE {{baseUrl}}/api/flashcards/PUT_ID_HERE
+Authorization: Bearer {{token}}
+
+###
+
+### Test 10: Verify deleted flashcard is gone (Should return 404)
+DELETE {{baseUrl}}/api/flashcards/PUT_DELETED_ID_HERE
+Authorization: Bearer {{token}}
+
+###
+
+### Test 11: Attempt to delete flashcard belonging to another user (Should return 404)
+### IMPORTANT: This requires having a flashcard ID that belongs to a different user
+### Create it manually with a different account if testing cross-user security
+@otherUserFlashcardId = 999
+DELETE {{baseUrl}}/api/flashcards/{{otherUserFlashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 12: Delete with very large flashcard ID (Should return 404)
+DELETE {{baseUrl}}/api/flashcards/9999999999
+Authorization: Bearer {{token}}
+
+###
+
+### Test 13: List flashcards before deletion to get IDs
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+###
+
+### Test 14: Create multiple flashcards for bulk delete testing
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Delete test 1",
+  "back": "Answer 1"
+}
+
+###
+
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Delete test 2",
+  "back": "Answer 2"
+}
+
+###
+
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Delete test 3",
+  "back": "Answer 3"
+}
+
+###
+
+### Test 15: Verify created flashcards exist before deleting
+GET {{baseUrl}}/api/flashcards?search=Delete test&page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+###
+
+### Test 16: Delete AI-generated flashcard with generation_id (if exists)
+### IMPORTANT: Replace with actual AI-generated flashcard ID
+@aiFlashcardId = 100
+DELETE {{baseUrl}}/api/flashcards/{{aiFlashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 17: Verify flashcard count decreases after deletion
+# Get count before
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=1
+Authorization: Bearer {{token}}
+
+### Delete a flashcard (use ID from list above)
+DELETE {{baseUrl}}/api/flashcards/PUT_ID_HERE
+Authorization: Bearer {{token}}
+
+### Get count after
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=1
+Authorization: Bearer {{token}}
+
+###
+
+### Test 18: Concurrent delete attempts (edge case)
+### Try to delete the same flashcard twice in quick succession
+### The second one should return 404
+@testFlashcardId = PUT_ID_HERE
+
+DELETE {{baseUrl}}/api/flashcards/{{testFlashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+DELETE {{baseUrl}}/api/flashcards/{{testFlashcardId}}
+Authorization: Bearer {{token}}
+
+###
+

@@ -1,0 +1,252 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+@token = your_jwt_token_here
+@baseUrl = http://localhost:8080
+
+### Test 1: Create flashcard - Basic success (Should return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?",
+  "back": "Paris"
+}
+
+###
+
+### Test 2: Create flashcard - Another valid flashcard (Should return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is 2 + 2?",
+  "back": "4"
+}
+
+###
+
+### Test 3: Create flashcard - With special characters (Should return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the formula for E=mc²?",
+  "back": "Energy equals mass times the speed of light squared: E = mc²"
+}
+
+###
+
+### Test 4: Create flashcard - With Unicode characters (Should return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Jak się nazywa stolica Polski?",
+  "back": "Warszawa 🇵🇱"
+}
+
+###
+
+### Test 5: Create flashcard - With whitespace (Should trim and return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "  What is the capital of Germany?  ",
+  "back": "  Berlin  "
+}
+
+###
+
+### Test 6: Missing Authorization header (Should fail with 401)
+POST {{baseUrl}}/api/flashcards
+Content-Type: application/json
+
+{
+  "front": "Test question",
+  "back": "Test answer"
+}
+
+###
+
+### Test 7: Invalid token (Should fail with 401)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+{
+  "front": "Test question",
+  "back": "Test answer"
+}
+
+###
+
+### Test 8: Empty front field (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "",
+  "back": "Paris"
+}
+
+###
+
+### Test 9: Empty back field (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?",
+  "back": ""
+}
+
+###
+
+### Test 10: Missing front field (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "back": "Paris"
+}
+
+###
+
+### Test 11: Missing back field (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?"
+}
+
+###
+
+### Test 12: Front field exceeds 200 characters (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "This is a very long question that exceeds the maximum allowed length of 200 characters. This is a very long question that exceeds the maximum allowed length of 200 characters. This is a very long question that exceeds the maximum allowed length of 200 characters.",
+  "back": "Answer"
+}
+
+###
+
+### Test 13: Back field exceeds 500 characters (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Question",
+  "back": "This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters."
+}
+
+###
+
+### Test 14: Whitespace only in front (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "   ",
+  "back": "Paris"
+}
+
+###
+
+### Test 15: Whitespace only in back (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Question",
+  "back": "   "
+}
+
+###
+
+### Test 16: Both fields empty (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "",
+  "back": ""
+}
+
+###
+
+### Test 17: Invalid JSON (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test",
+  "back": "Test"
+
+###
+
+### Test 18: Null values (Should fail with 400)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": null,
+  "back": null
+}
+
+###
+
+### Test 19: Edge case - Front at exactly 200 characters (Should return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+  "back": "Answer"
+}
+
+###
+
+### Test 20: Edge case - Back at exactly 500 characters (Should return 201)
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Question",
+  "back": "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+}
+
+###
+
+### Test 21: Verify flashcards were created with source='manual'
+GET {{baseUrl}}/api/flashcards?source=manual
+Authorization: Bearer {{token}}
+
+###
+
+### Test 22: Verify all created flashcards appear in list
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+

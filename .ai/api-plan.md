@@ -103,27 +103,6 @@ The API is organized around the following main resources, corresponding to datab
 
 ---
 
-#### Delete Account
-**Endpoint:** `DELETE /api/auth/account`  
-**Description:** Delete user account and all associated data (GDPR compliance)  
-**Authentication:** Required (Bearer token)  
-
-**Request Body:**
-```json
-{
-  "password": "SecurePassword123!",
-  "confirmation": "DELETE"
-}
-```
-
-**Success Response (204 No Content)**
-
-**Error Responses:**
-- `400 Bad Request` - Invalid confirmation
-- `401 Unauthorized` - Invalid password
-
----
-
 ### 2.2 Flashcard Endpoints
 
 #### List Flashcards

@@ -1,0 +1,650 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+### IMPORTANT: Replace {{generationId}} with an actual generation ID that belongs to your user
+@token = your_jwt_token_here
+@generationId = 1
+@baseUrl = http://localhost:8080
+
+### Test 1: Create flashcards batch - Basic success with 2 flashcards (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "What is photosynthesis?",
+      "back": "The process by which plants convert light energy into chemical energy",
+      "source": "ai-full"
+    },
+    {
+      "front": "What pigment absorbs light in photosynthesis?",
+      "back": "Chlorophyll, primarily found in chloroplasts",
+      "source": "ai-edited"
+    }
+  ]
+}
+
+###
+
+### Test 2: Create flashcards batch - Single flashcard (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "What is DNA?",
+      "back": "Deoxyribonucleic acid, the molecule that carries genetic information",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 3: Create flashcards batch - Multiple flashcards with mixed sources (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "What is the boiling point of water?",
+      "back": "100°C or 212°F at sea level",
+      "source": "ai-full"
+    },
+    {
+      "front": "What is the freezing point of water?",
+      "back": "0°C or 32°F at standard pressure",
+      "source": "ai-edited"
+    },
+    {
+      "front": "What is absolute zero?",
+      "back": "-273.15°C or -459.67°F or 0 Kelvin",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 4: Create flashcards batch - Only ai-full source (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "What is Newton's first law?",
+      "back": "An object at rest stays at rest and an object in motion stays in motion unless acted upon by an external force",
+      "source": "ai-full"
+    },
+    {
+      "front": "What is Newton's second law?",
+      "back": "Force equals mass times acceleration (F=ma)",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 5: Create flashcards batch - Only ai-edited source (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "What is mitosis?",
+      "back": "Cell division that produces two identical daughter cells",
+      "source": "ai-edited"
+    },
+    {
+      "front": "What is meiosis?",
+      "back": "Cell division that produces four non-identical gametes with half the chromosome number",
+      "source": "ai-edited"
+    }
+  ]
+}
+
+###
+
+### Test 6: Create flashcards batch - Maximum length front and back (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "What is the longest word in the English language that can be typed using only the left hand on a QWERTY keyboard and what does it mean in common usage today in modern society?",
+      "back": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum cras amet.",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 7: Create flashcards batch - With Unicode and special characters (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Jak nazywa się stolica Polski?",
+      "back": "Warszawa 🇵🇱",
+      "source": "ai-full"
+    },
+    {
+      "front": "Was ist die Hauptstadt von Deutschland?",
+      "back": "Berlin 🇩🇪",
+      "source": "ai-edited"
+    },
+    {
+      "front": "日本の首都は何ですか？",
+      "back": "東京 (Tokyo) 🇯🇵",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 8: Create flashcards batch - With trimming test (Should return 201 and trim whitespace)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "  What is trimming?  ",
+      "back": "  Removing leading and trailing whitespace  ",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 9: Create flashcards batch - Missing Authorization header (Should return 401)
+POST {{baseUrl}}/api/flashcards/batch
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test",
+      "back": "Test",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 10: Create flashcards batch - Invalid token (Should return 401)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test",
+      "back": "Test",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 11: Create flashcards batch - Invalid generationId (non-existent) (Should return 404)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": 999999,
+  "flashcards": [
+    {
+      "front": "Test",
+      "back": "Test",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 12: Create flashcards batch - GenerationId zero (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": 0,
+  "flashcards": [
+    {
+      "front": "Test",
+      "back": "Test",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 13: Create flashcards batch - GenerationId negative (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": -1,
+  "flashcards": [
+    {
+      "front": "Test",
+      "back": "Test",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 14: Create flashcards batch - Missing generationId (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "flashcards": [
+    {
+      "front": "Test",
+      "back": "Test",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 15: Create flashcards batch - Empty flashcards array (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": []
+}
+
+###
+
+### Test 16: Create flashcards batch - Missing flashcards array (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}}
+}
+
+###
+
+### Test 17: Create flashcards batch - Empty front (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "",
+      "back": "Test back",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 18: Create flashcards batch - Missing front (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "back": "Test back",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 19: Create flashcards batch - Front too long (>200 chars) (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "This is a very long front text that exceeds the maximum length of 200 characters. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+      "back": "Test back",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 20: Create flashcards batch - Empty back (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "back": "",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 21: Create flashcards batch - Missing back (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 22: Create flashcards batch - Back too long (>500 chars) (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "back": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Cras amet risus nec velit consectetur adipiscing elit ut aliquam purus sit.",
+      "source": "ai-full"
+    }
+  ]
+}
+
+###
+
+### Test 23: Create flashcards batch - Missing source (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "back": "Test back"
+    }
+  ]
+}
+
+###
+
+### Test 24: Create flashcards batch - Invalid source value (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "back": "Test back",
+      "source": "manual"
+    }
+  ]
+}
+
+###
+
+### Test 25: Create flashcards batch - Invalid source value "ai" (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "back": "Test back",
+      "source": "ai"
+    }
+  ]
+}
+
+###
+
+### Test 26: Create flashcards batch - Empty source (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "Test front",
+      "back": "Test back",
+      "source": ""
+    }
+  ]
+}
+
+###
+
+### Test 27: Create flashcards batch - Multiple validation errors (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {
+      "front": "",
+      "back": "Test back",
+      "source": "ai-full"
+    },
+    {
+      "front": "Test front",
+      "back": "",
+      "source": "manual"
+    }
+  ]
+}
+
+###
+
+### Test 28: Create flashcards batch - Exactly 50 flashcards (Should return 201)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {"front": "Q1", "back": "A1", "source": "ai-full"},
+    {"front": "Q2", "back": "A2", "source": "ai-edited"},
+    {"front": "Q3", "back": "A3", "source": "ai-full"},
+    {"front": "Q4", "back": "A4", "source": "ai-edited"},
+    {"front": "Q5", "back": "A5", "source": "ai-full"},
+    {"front": "Q6", "back": "A6", "source": "ai-edited"},
+    {"front": "Q7", "back": "A7", "source": "ai-full"},
+    {"front": "Q8", "back": "A8", "source": "ai-edited"},
+    {"front": "Q9", "back": "A9", "source": "ai-full"},
+    {"front": "Q10", "back": "A10", "source": "ai-edited"},
+    {"front": "Q11", "back": "A11", "source": "ai-full"},
+    {"front": "Q12", "back": "A12", "source": "ai-edited"},
+    {"front": "Q13", "back": "A13", "source": "ai-full"},
+    {"front": "Q14", "back": "A14", "source": "ai-edited"},
+    {"front": "Q15", "back": "A15", "source": "ai-full"},
+    {"front": "Q16", "back": "A16", "source": "ai-edited"},
+    {"front": "Q17", "back": "A17", "source": "ai-full"},
+    {"front": "Q18", "back": "A18", "source": "ai-edited"},
+    {"front": "Q19", "back": "A19", "source": "ai-full"},
+    {"front": "Q20", "back": "A20", "source": "ai-edited"},
+    {"front": "Q21", "back": "A21", "source": "ai-full"},
+    {"front": "Q22", "back": "A22", "source": "ai-edited"},
+    {"front": "Q23", "back": "A23", "source": "ai-full"},
+    {"front": "Q24", "back": "A24", "source": "ai-edited"},
+    {"front": "Q25", "back": "A25", "source": "ai-full"},
+    {"front": "Q26", "back": "A26", "source": "ai-edited"},
+    {"front": "Q27", "back": "A27", "source": "ai-full"},
+    {"front": "Q28", "back": "A28", "source": "ai-edited"},
+    {"front": "Q29", "back": "A29", "source": "ai-full"},
+    {"front": "Q30", "back": "A30", "source": "ai-edited"},
+    {"front": "Q31", "back": "A31", "source": "ai-full"},
+    {"front": "Q32", "back": "A32", "source": "ai-edited"},
+    {"front": "Q33", "back": "A33", "source": "ai-full"},
+    {"front": "Q34", "back": "A34", "source": "ai-edited"},
+    {"front": "Q35", "back": "A35", "source": "ai-full"},
+    {"front": "Q36", "back": "A36", "source": "ai-edited"},
+    {"front": "Q37", "back": "A37", "source": "ai-full"},
+    {"front": "Q38", "back": "A38", "source": "ai-edited"},
+    {"front": "Q39", "back": "A39", "source": "ai-full"},
+    {"front": "Q40", "back": "A40", "source": "ai-edited"},
+    {"front": "Q41", "back": "A41", "source": "ai-full"},
+    {"front": "Q42", "back": "A42", "source": "ai-edited"},
+    {"front": "Q43", "back": "A43", "source": "ai-full"},
+    {"front": "Q44", "back": "A44", "source": "ai-edited"},
+    {"front": "Q45", "back": "A45", "source": "ai-full"},
+    {"front": "Q46", "back": "A46", "source": "ai-edited"},
+    {"front": "Q47", "back": "A47", "source": "ai-full"},
+    {"front": "Q48", "back": "A48", "source": "ai-edited"},
+    {"front": "Q49", "back": "A49", "source": "ai-full"},
+    {"front": "Q50", "back": "A50", "source": "ai-edited"}
+  ]
+}
+
+###
+
+### Test 29: Create flashcards batch - More than 50 flashcards (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "generationId": {{generationId}},
+  "flashcards": [
+    {"front": "Q1", "back": "A1", "source": "ai-full"},
+    {"front": "Q2", "back": "A2", "source": "ai-edited"},
+    {"front": "Q3", "back": "A3", "source": "ai-full"},
+    {"front": "Q4", "back": "A4", "source": "ai-edited"},
+    {"front": "Q5", "back": "A5", "source": "ai-full"},
+    {"front": "Q6", "back": "A6", "source": "ai-edited"},
+    {"front": "Q7", "back": "A7", "source": "ai-full"},
+    {"front": "Q8", "back": "A8", "source": "ai-edited"},
+    {"front": "Q9", "back": "A9", "source": "ai-full"},
+    {"front": "Q10", "back": "A10", "source": "ai-edited"},
+    {"front": "Q11", "back": "A11", "source": "ai-full"},
+    {"front": "Q12", "back": "A12", "source": "ai-edited"},
+    {"front": "Q13", "back": "A13", "source": "ai-full"},
+    {"front": "Q14", "back": "A14", "source": "ai-edited"},
+    {"front": "Q15", "back": "A15", "source": "ai-full"},
+    {"front": "Q16", "back": "A16", "source": "ai-edited"},
+    {"front": "Q17", "back": "A17", "source": "ai-full"},
+    {"front": "Q18", "back": "A18", "source": "ai-edited"},
+    {"front": "Q19", "back": "A19", "source": "ai-full"},
+    {"front": "Q20", "back": "A20", "source": "ai-edited"},
+    {"front": "Q21", "back": "A21", "source": "ai-full"},
+    {"front": "Q22", "back": "A22", "source": "ai-edited"},
+    {"front": "Q23", "back": "A23", "source": "ai-full"},
+    {"front": "Q24", "back": "A24", "source": "ai-edited"},
+    {"front": "Q25", "back": "A25", "source": "ai-full"},
+    {"front": "Q26", "back": "A26", "source": "ai-edited"},
+    {"front": "Q27", "back": "A27", "source": "ai-full"},
+    {"front": "Q28", "back": "A28", "source": "ai-edited"},
+    {"front": "Q29", "back": "A29", "source": "ai-full"},
+    {"front": "Q30", "back": "A30", "source": "ai-edited"},
+    {"front": "Q31", "back": "A31", "source": "ai-full"},
+    {"front": "Q32", "back": "A32", "source": "ai-edited"},
+    {"front": "Q33", "back": "A33", "source": "ai-full"},
+    {"front": "Q34", "back": "A34", "source": "ai-edited"},
+    {"front": "Q35", "back": "A35", "source": "ai-full"},
+    {"front": "Q36", "back": "A36", "source": "ai-edited"},
+    {"front": "Q37", "back": "A37", "source": "ai-full"},
+    {"front": "Q38", "back": "A38", "source": "ai-edited"},
+    {"front": "Q39", "back": "A39", "source": "ai-full"},
+    {"front": "Q40", "back": "A40", "source": "ai-edited"},
+    {"front": "Q41", "back": "A41", "source": "ai-full"},
+    {"front": "Q42", "back": "A42", "source": "ai-edited"},
+    {"front": "Q43", "back": "A43", "source": "ai-full"},
+    {"front": "Q44", "back": "A44", "source": "ai-edited"},
+    {"front": "Q45", "back": "A45", "source": "ai-full"},
+    {"front": "Q46", "back": "A46", "source": "ai-edited"},
+    {"front": "Q47", "back": "A47", "source": "ai-full"},
+    {"front": "Q48", "back": "A48", "source": "ai-edited"},
+    {"front": "Q49", "back": "A49", "source": "ai-full"},
+    {"front": "Q50", "back": "A50", "source": "ai-edited"},
+    {"front": "Q51", "back": "A51", "source": "ai-full"}
+  ]
+}
+
+###
+
+### Test 30: Create flashcards batch - Empty request body (Should return 400)
+POST {{baseUrl}}/api/flashcards/batch
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+###
+

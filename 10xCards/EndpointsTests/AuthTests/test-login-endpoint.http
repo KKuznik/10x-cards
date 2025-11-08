@@ -1,0 +1,220 @@
+### Test 1: Successful Login with Valid Credentials
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 2: Login with Non-Existent Email (Should fail with 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 3: Login with Invalid Password (Should fail with 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "WrongPassword123!"
+}
+
+###
+
+### Test 4: Login with Missing Email Field (Should fail with 400)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 5: Login with Missing Password Field (Should fail with 400)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+###
+
+### Test 6: Login with Empty Email (Should fail with 400 or 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 7: Login with Empty Password (Should fail with 400 or 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": ""
+}
+
+###
+
+### Test 8: Login with Both Fields Empty (Should fail with 400 or 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+###
+
+### Test 9: Login with Malformed Email Format (Should fail with 400 or 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalid-email-format",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 10: Login with Whitespace in Email (Should fail with 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": " test@example.com ",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 11: Login with Case Sensitive Email (Test email case sensitivity)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "TEST@EXAMPLE.COM",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 12: Login with Null Email (Should fail with 400)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": null,
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 13: Login with Null Password (Should fail with 400)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": null
+}
+
+###
+
+### Test 14: Login with Invalid JSON (Should fail with 400)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!"
+
+###
+
+### Test 15: Login with SQL Injection Attempt in Email (Should fail safely with 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin'--",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 16: Login with SQL Injection Attempt in Password (Should fail safely with 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "' OR '1'='1"
+}
+
+###
+
+### Test 17: Login with Extra Fields (Should succeed and ignore extra fields)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!",
+  "extraField": "should be ignored",
+  "anotherField": 123
+}
+
+###
+
+### Test 18: Successful Login - Verify Token Response Structure
+# This test should return a proper token with userId, email, token, and expiresAt
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 19: Login with Very Long Email (Should fail with 400 or 401)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "verylongemailaddressthatexceedsthemaximumlengthallowedforemailveryveryveryverylongemailaddressthatexceedsthemaximumlengthallowedforemailveryveryveryverylongemailaddressthatexceedsthemaximumlengthallowedforemailveryveryveryverylongemailaddress@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Test 20: Multiple Successful Logins (Should work for multiple sessions)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+

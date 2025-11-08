@@ -1,0 +1,440 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+### IMPORTANT: Replace {{flashcardId}} with an actual flashcard ID from your database
+### IMPORTANT: Replace {{aiFlashcardId}} with a flashcard ID that has source='ai-full'
+### IMPORTANT: Replace {{otherUserFlashcardId}} with a flashcard ID belonging to a different user
+@token = your_jwt_token_here
+@flashcardId = 1
+@aiFlashcardId = 2
+@otherUserFlashcardId = 999
+@baseUrl = http://localhost:8080
+
+### ============================================================================
+### SETUP TESTS - Create flashcards to update
+### ============================================================================
+
+### Setup 1: Create a manual flashcard to test update
+POST {{baseUrl}}/api/flashcards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Original question - What is the capital of France?",
+  "back": "Original answer - Paris"
+}
+
+###
+
+### Setup 2: Get flashcard list to find IDs
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=10&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+
+### ============================================================================
+### SUCCESS TESTS
+### ============================================================================
+
+### Test 1: Update flashcard - Basic success (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?",
+  "back": "Paris, the largest city in France"
+}
+
+###
+
+### Test 2: Update flashcard - With special characters (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is E=mc²?",
+  "back": "Einstein's famous equation: Energy equals mass times the speed of light squared"
+}
+
+###
+
+### Test 3: Update flashcard - With Unicode characters (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Co to jest Warszawa?",
+  "back": "Stolica Polski 🇵🇱"
+}
+
+###
+
+### Test 4: Update flashcard - With whitespace (Should trim and return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "  What is the capital of Germany?  ",
+  "back": "  Berlin  "
+}
+
+###
+
+### Test 5: Update flashcard - Front at exactly 200 characters (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+  "back": "Answer updated"
+}
+
+###
+
+### Test 6: Update flashcard - Back at exactly 500 characters (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Question updated",
+  "back": "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+}
+
+###
+
+### Test 7: Update AI flashcard - Verify source changes from 'ai-full' to 'ai-edited' (Should return 200)
+### IMPORTANT: This test requires a flashcard with source='ai-full'
+PUT {{baseUrl}}/api/flashcards/{{aiFlashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Updated AI question",
+  "back": "Updated AI answer"
+}
+
+###
+
+### Test 8: Verify the updated flashcard has source='ai-edited'
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+###
+
+### ============================================================================
+### AUTHENTICATION & AUTHORIZATION ERROR TESTS
+### ============================================================================
+
+### Test 9: Missing Authorization header (Should fail with 401)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Content-Type: application/json
+
+{
+  "front": "Test question",
+  "back": "Test answer"
+}
+
+###
+
+### Test 10: Invalid token (Should fail with 401)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+{
+  "front": "Test question",
+  "back": "Test answer"
+}
+
+###
+
+### Test 11: Update another user's flashcard (Should fail with 404)
+### IMPORTANT: This requires a flashcard ID from a different user
+PUT {{baseUrl}}/api/flashcards/{{otherUserFlashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Attempting to update someone else's flashcard",
+  "back": "This should fail with 404"
+}
+
+###
+
+### Test 12: Non-existent flashcard ID (Should fail with 404)
+PUT {{baseUrl}}/api/flashcards/999999999
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test question",
+  "back": "Test answer"
+}
+
+###
+
+### ============================================================================
+### VALIDATION ERROR TESTS
+### ============================================================================
+
+### Test 13: Empty front field (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "",
+  "back": "Paris"
+}
+
+###
+
+### Test 14: Empty back field (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?",
+  "back": ""
+}
+
+###
+
+### Test 15: Missing front field (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "back": "Paris"
+}
+
+###
+
+### Test 16: Missing back field (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?"
+}
+
+###
+
+### Test 17: Front field exceeds 200 characters (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "This is a very long question that exceeds the maximum allowed length of 200 characters. This is a very long question that exceeds the maximum allowed length of 200 characters. This is a very long question that exceeds the maximum allowed length of 200 characters.",
+  "back": "Answer"
+}
+
+###
+
+### Test 18: Back field exceeds 500 characters (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Question",
+  "back": "This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters. This is a very long answer that exceeds the maximum allowed length of 500 characters."
+}
+
+###
+
+### Test 19: Whitespace only in front (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "   ",
+  "back": "Paris"
+}
+
+###
+
+### Test 20: Whitespace only in back (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Question",
+  "back": "   "
+}
+
+###
+
+### Test 21: Both fields empty (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "",
+  "back": ""
+}
+
+###
+
+### Test 22: Invalid JSON (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test",
+  "back": "Test"
+
+###
+
+### Test 23: Null values (Should fail with 400)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": null,
+  "back": null
+}
+
+###
+
+### ============================================================================
+### EDGE CASE TESTS
+### ============================================================================
+
+### Test 24: Update with same content (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital of France?",
+  "back": "Paris"
+}
+
+###
+
+### Test 25: Update with newlines and tabs (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is the capital?\nFrance",
+  "back": "Paris\n\tThe capital of France"
+}
+
+###
+
+### Test 26: Update with HTML-like content (Should return 200, stored as-is)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "<b>What is the capital?</b>",
+  "back": "<p>Paris</p>"
+}
+
+###
+
+### Test 27: Update with JSON-like content (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is JSON?",
+  "back": "{\"key\": \"value\"}"
+}
+
+###
+
+### Test 28: Update with quotes and apostrophes (Should return 200)
+PUT {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "What is \"escaping\"?",
+  "back": "It's a way to include special characters like \"quotes\""
+}
+
+###
+
+### Test 29: Invalid flashcard ID format - string instead of number (Should fail with 404 or 400)
+PUT {{baseUrl}}/api/flashcards/invalid-id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test",
+  "back": "Test"
+}
+
+###
+
+### Test 30: Negative flashcard ID (Should fail with 404)
+PUT {{baseUrl}}/api/flashcards/-1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test",
+  "back": "Test"
+}
+
+###
+
+### Test 31: Zero flashcard ID (Should fail with 404)
+PUT {{baseUrl}}/api/flashcards/0
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "front": "Test",
+  "back": "Test"
+}
+
+###
+
+### ============================================================================
+### VERIFICATION TESTS
+### ============================================================================
+
+### Test 32: Verify updatedAt timestamp changed
+GET {{baseUrl}}/api/flashcards/{{flashcardId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 33: Verify updated flashcard appears in list with correct data
+GET {{baseUrl}}/api/flashcards?page=1&pageSize=20&sortBy=updatedAt&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+
+### Test 34: Verify manual flashcard stays 'manual' after update
+GET {{baseUrl}}/api/flashcards?source=manual
+Authorization: Bearer {{token}}
+
+###
+
+### Test 35: Verify AI-edited flashcards appear in list
+GET {{baseUrl}}/api/flashcards?source=ai-edited
+Authorization: Bearer {{token}}
+
+###
+

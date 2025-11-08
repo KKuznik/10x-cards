@@ -1,0 +1,108 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+### IMPORTANT: Replace {{generationId}} with an actual generation ID from your database
+@token = your_jwt_token_here
+@baseUrl = http://localhost:8080
+@generationId = 1
+@otherUserGenerationId = 999
+
+### Test 1: Get Generation Details - Success (valid generation)
+GET {{baseUrl}}/api/generations/{{generationId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 2: Get Generation Details - Not Found (non-existent ID)
+GET {{baseUrl}}/api/generations/99999
+Authorization: Bearer {{token}}
+
+###
+
+### Test 3: Get Generation Details - Unauthorized (no token)
+GET {{baseUrl}}/api/generations/{{generationId}}
+
+###
+
+### Test 4: Get Generation Details - Invalid ID (zero)
+GET {{baseUrl}}/api/generations/0
+Authorization: Bearer {{token}}
+
+###
+
+### Test 5: Get Generation Details - Invalid ID (negative)
+GET {{baseUrl}}/api/generations/-1
+Authorization: Bearer {{token}}
+
+###
+
+### Test 6: Get Generation Details - Other User's Generation (should return 404 for security)
+# This test requires a generation ID from a different user
+# Replace {{otherUserGenerationId}} with an actual ID from another user's generation
+GET {{baseUrl}}/api/generations/{{otherUserGenerationId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 7: Get Generation Details - Invalid token
+GET {{baseUrl}}/api/generations/{{generationId}}
+Authorization: Bearer invalid_token_here
+
+###
+
+### Test 8: Get Generation Details - With large ID (boundary test)
+GET {{baseUrl}}/api/generations/9223372036854775807
+Authorization: Bearer {{token}}
+
+###
+
+### Test 9: Get Generation Details - Verify response structure
+# This test should return a generation with all expected fields:
+# - id, userId, model, generatedCount
+# - acceptedUneditedCount, acceptedEditedCount
+# - sourceTextHash, sourceTextLength, generationDuration
+# - createdAt, updatedAt
+# - flashcards array with: id, front, back, source, createdAt, updatedAt, generationId
+GET {{baseUrl}}/api/generations/{{generationId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Test 10: Get Generation Details - Generation with no flashcards
+# This test requires a generation that has no associated flashcards
+# The flashcards array should be empty []
+GET {{baseUrl}}/api/generations/{{generationId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Notes:
+# Expected successful response (200 OK):
+# {
+#   "id": 5,
+#   "userId": "550e8400-e29b-41d4-a716-446655440000",
+#   "model": "openai/gpt-4o-mini",
+#   "generatedCount": 8,
+#   "acceptedUneditedCount": 5,
+#   "acceptedEditedCount": 2,
+#   "sourceTextHash": "a1b2c3d4e5f6...",
+#   "sourceTextLength": 2450,
+#   "generationDuration": 3200,
+#   "createdAt": "2025-11-03T10:00:00Z",
+#   "updatedAt": "2025-11-03T10:15:00Z",
+#   "flashcards": [
+#     {
+#       "id": 10,
+#       "front": "What is photosynthesis?",
+#       "back": "The process by which plants convert light energy into chemical energy",
+#       "source": "ai-full",
+#       "createdAt": "2025-11-03T10:15:00Z",
+#       "updatedAt": "2025-11-03T10:15:00Z",
+#       "generationId": 5
+#     }
+#   ]
+# }
+#
+# Expected error responses:
+# - 401 Unauthorized: Missing or invalid token
+# - 404 Not Found: {"message": "Generation not found"}
+# - 404 Not Found: Generation belongs to another user (RLS)
+

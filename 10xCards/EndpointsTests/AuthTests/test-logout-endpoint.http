@@ -1,0 +1,148 @@
+### IMPORTANT: Replace {{token}} with your actual JWT token from login/register response
+@token = your_jwt_token_here
+@baseUrl = http://localhost:8080
+
+### Test 1: Successful Logout with Valid Token (Should return 204)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+###
+
+### Test 2: Logout without Authorization Header (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+
+###
+
+### Test 3: Logout with Invalid Token (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer invalid_token_here_12345
+
+###
+
+### Test 4: Logout with Malformed Token (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer malformed.token.format
+
+###
+
+### Test 5: Logout with Expired Token (Should fail with 401)
+# Note: Use an actual expired token if available
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwMDAwMDB9.expired_token
+
+###
+
+### Test 6: Logout with Empty Bearer Token (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer 
+
+###
+
+### Test 7: Logout with Missing "Bearer" Prefix (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: {{token}}
+
+###
+
+### Test 8: Logout with Wrong Authorization Scheme (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Basic {{token}}
+
+###
+
+### Test 9: Multiple Logout Attempts - First Attempt (Should succeed with 204)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+###
+
+### Test 10: Multiple Logout Attempts - Second Attempt (Test idempotency)
+# Note: This might succeed or fail depending on implementation
+# If tokens are invalidated, this should fail with 401
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+###
+
+### Test 11: Logout with Extra Headers (Should succeed and ignore extras)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+X-Custom-Header: test-value
+X-Another-Header: another-value
+
+###
+
+### Test 12: Logout with Content-Type Header (Should succeed, no body needed)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+###
+
+### Test 13: Logout with Request Body (Should succeed, body should be ignored)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "someData": "should be ignored"
+}
+
+###
+
+### Test 14: Logout with Whitespace in Token (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer  {{token}}  
+
+###
+
+### Test 15: Case Sensitive Authorization Header (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+authorization: Bearer {{token}}
+
+###
+
+### Test 16: Logout - Complete Flow Test
+# Step 1: Login to get a fresh token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+# Step 2: Use the token from Step 1 to logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+###
+
+### Test 17: Logout with SQL Injection in Token (Should fail safely with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer ' OR '1'='1
+
+###
+
+### Test 18: Logout with XSS Attempt in Token (Should fail safely with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer <script>alert('xss')</script>
+
+###
+
+### Test 19: Logout with Very Long Token (Should fail with 401)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer verylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtokenverylongtoken
+
+###
+
+### Test 20: Logout with Token from Different User
+# Note: This should still succeed (each user can logout their own session)
+# You need to create another user and get their token for this test
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+###
+

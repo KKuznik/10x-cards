@@ -1,0 +1,96 @@
+### Test 1: Successful Registration
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!",
+  "confirmPassword": "SecurePassword123!"
+}
+
+###
+
+### Test 2: Duplicate Email (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "SecurePassword123!",
+  "confirmPassword": "SecurePassword123!"
+}
+
+###
+
+### Test 3: Invalid Email Format (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": "SecurePassword123!",
+  "confirmPassword": "SecurePassword123!"
+}
+
+###
+
+### Test 4: Weak Password - No Special Character (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test2@example.com",
+  "password": "SecurePassword123",
+  "confirmPassword": "SecurePassword123"
+}
+
+###
+
+### Test 5: Weak Password - Too Short (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test3@example.com",
+  "password": "Pass1!",
+  "confirmPassword": "Pass1!"
+}
+
+###
+
+### Test 6: Passwords Don't Match (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test4@example.com",
+  "password": "SecurePassword123!",
+  "confirmPassword": "DifferentPassword123!"
+}
+
+###
+
+### Test 7: Missing Email (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": "SecurePassword123!",
+  "confirmPassword": "SecurePassword123!"
+}
+
+###
+
+### Test 8: Missing Password (Should fail with 400)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test5@example.com",
+  "password": "",
+  "confirmPassword": ""
+}
+
+###
+

@@ -1,0 +1,160 @@
+### Variables
+@baseUrl = http://localhost:5150/api
+@token = YOUR_JWT_TOKEN_HERE
+
+###############################################################################
+# POST /api/generations - Generate Flashcards
+###############################################################################
+
+### 1. Valid request - Generate flashcards with valid text and model
+POST {{baseUrl}}/generations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sourceText": "Photosynthesis is the process by which plants and other organisms convert light energy, normally from the sun, into chemical energy that can be later released to fuel the organisms' activities. This chemical energy is stored in carbohydrate molecules, such as sugars, which are synthesized from carbon dioxide and water. In most cases, oxygen is also released as a waste product. Photosynthesis occurs in plants, algae, and many species of bacteria, but not in archaea. Photosynthetic organisms are called photoautotrophs, since they can create their own food. In plants, algae and cyanobacteria, photosynthesis uses carbon dioxide and water, releasing oxygen as a waste product. Photosynthesis is vital for all aerobic life on Earth. As well as maintaining the normal level of oxygen in the atmosphere, nearly all life either depends on it directly as a source of energy, or indirectly as the ultimate source of the energy in their food. The rate of energy capture by photosynthesis is immense: approximately 130 terawatts, which is about six times larger than the power consumption of human civilization. Photosynthetic organisms also convert around 100-115 billion tonnes of carbon into biomass per year.",
+  "model": "openai/gpt-4o-mini"
+}
+
+### Expected Response: 201 Created
+# {
+#   "id": 1,
+#   "userId": "guid",
+#   "model": "openai/gpt-4o-mini",
+#   "generatedCount": 8,
+#   "acceptedUneditedCount": null,
+#   "acceptedEditedCount": null,
+#   "sourceTextHash": "...",
+#   "sourceTextLength": 1234,
+#   "generationDuration": 3200,
+#   "createdAt": "2025-11-08T...",
+#   "updatedAt": "2025-11-08T...",
+#   "flashcards": [
+#     {
+#       "front": "What is photosynthesis?",
+#       "back": "The process by which plants convert light energy into chemical energy"
+#     }
+#   ]
+# }
+
+###############################################################################
+
+### 2. Invalid request - Text too short (less than 1000 characters)
+POST {{baseUrl}}/generations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sourceText": "This text is way too short to generate flashcards. It needs to be at least 1000 characters long but this is only a few dozen characters.",
+  "model": "openai/gpt-4o-mini"
+}
+
+### Expected Response: 400 Bad Request
+# {
+#   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+#   "title": "One or more validation errors occurred.",
+#   "status": 400,
+#   "errors": {
+#     "sourceText": [
+#       "Source text must be at least 1000 characters"
+#     ]
+#   }
+# }
+
+###############################################################################
+
+### 3. Invalid request - Text too long (more than 10000 characters)
+POST {{baseUrl}}/generations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sourceText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum... [Repeat this text until it exceeds 10000 characters - this is just a placeholder for testing. In reality, you would need to paste a text that is longer than 10000 characters here. For actual testing, generate a long text that exceeds the 10000 character limit. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  "model": "openai/gpt-4o-mini"
+}
+
+### Expected Response: 400 Bad Request
+# {
+#   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+#   "title": "One or more validation errors occurred.",
+#   "status": 400,
+#   "errors": {
+#     "sourceText": [
+#       "Source text must not exceed 10000 characters"
+#     ]
+#   }
+# }
+
+###############################################################################
+
+### 4. Invalid request - Missing model
+POST {{baseUrl}}/generations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sourceText": "Photosynthesis is the process by which plants and other organisms convert light energy, normally from the sun, into chemical energy that can be later released to fuel the organisms' activities. This chemical energy is stored in carbohydrate molecules, such as sugars, which are synthesized from carbon dioxide and water. In most cases, oxygen is also released as a waste product. Photosynthesis occurs in plants, algae, and many species of bacteria, but not in archaea. Photosynthetic organisms are called photoautotrophs, since they can create their own food. In plants, algae and cyanobacteria, photosynthesis uses carbon dioxide and water, releasing oxygen as a waste product. Photosynthesis is vital for all aerobic life on Earth. As well as maintaining the normal level of oxygen in the atmosphere, nearly all life either depends on it directly as a source of energy, or indirectly as the ultimate source of the energy in their food. The rate of energy capture by photosynthesis is immense: approximately 130 terawatts, which is about six times larger than the power consumption of human civilization. Photosynthetic organisms also convert around 100-115 billion tonnes of carbon into biomass per year."
+}
+
+### Expected Response: 400 Bad Request
+# {
+#   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+#   "title": "One or more validation errors occurred.",
+#   "status": 400,
+#   "errors": {
+#     "model": [
+#       "Model is required"
+#     ]
+#   }
+# }
+
+###############################################################################
+
+### 5. Unauthorized request - No token
+POST {{baseUrl}}/generations
+Content-Type: application/json
+
+{
+  "sourceText": "Photosynthesis is the process by which plants and other organisms convert light energy, normally from the sun, into chemical energy that can be later released to fuel the organisms' activities. This chemical energy is stored in carbohydrate molecules, such as sugars, which are synthesized from carbon dioxide and water. In most cases, oxygen is also released as a waste product. Photosynthesis occurs in plants, algae, and many species of bacteria, but not in archaea. Photosynthetic organisms are called photoautotrophs, since they can create their own food. In plants, algae and cyanobacteria, photosynthesis uses carbon dioxide and water, releasing oxygen as a waste product. Photosynthesis is vital for all aerobic life on Earth. As well as maintaining the normal level of oxygen in the atmosphere, nearly all life either depends on it directly as a source of energy, or indirectly as the ultimate source of the energy in their food. The rate of energy capture by photosynthesis is immense: approximately 130 terawatts, which is about six times larger than the power consumption of human civilization. Photosynthetic organisms also convert around 100-115 billion tonnes of carbon into biomass per year.",
+  "model": "openai/gpt-4o-mini"
+}
+
+### Expected Response: 401 Unauthorized
+
+###############################################################################
+
+### 6. Valid request - Alternative model (Anthropic Claude)
+POST {{baseUrl}}/generations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sourceText": "The water cycle, also known as the hydrologic cycle, describes the continuous movement of water on, above, and below the surface of the Earth. The mass of water on Earth remains fairly constant over time but the partitioning of the water into the major reservoirs of ice, fresh water, saline water and atmospheric water is variable depending on a wide range of climatic variables. The water moves from one reservoir to another, such as from river to ocean, or from the ocean to the atmosphere, by the physical processes of evaporation, condensation, precipitation, infiltration, surface runoff, and subsurface flow. In doing so, the water goes through different forms: liquid, solid (ice) and vapor. The water cycle involves the exchange of energy, which leads to temperature changes. When water evaporates, it takes up energy from its surroundings and cools the environment. When it condenses, it releases energy and warms the environment. These heat exchanges influence climate. The evaporative phase of the cycle purifies water which then replenishes the land with freshwater. The flow of liquid water and ice transports minerals across the globe.",
+  "model": "anthropic/claude-3-haiku"
+}
+
+### Expected Response: 201 Created
+
+###############################################################################
+
+### 7. Valid request - Different AI model (Google Gemini)
+POST {{baseUrl}}/generations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sourceText": "Cellular respiration is a set of metabolic reactions and processes that take place in the cells of organisms to convert chemical energy from oxygen molecules or nutrients into adenosine triphosphate (ATP), and then release waste products. The reactions involved in respiration are catabolic reactions, which break down large molecules into smaller ones, releasing energy because weak high-energy bonds, in particular in molecular oxygen, are replaced by stronger bonds in the products. Respiration is one of the key ways a cell releases chemical energy to fuel cellular activity. The overall reaction occurs in a series of biochemical steps, some of which are redox reactions. Although cellular respiration is technically a combustion reaction, it clearly does not resemble one when it occurs in a living cell because of the slow, controlled release of energy from the series of reactions. Nutrients that are commonly used by animal and plant cells in respiration include sugar, amino acids and fatty acids, and the most common oxidizing agent (electron acceptor) is molecular oxygen (O2).",
+  "model": "google/gemini-flash-1.5"
+}
+
+### Expected Response: 201 Created
+
+###############################################################################
+
+### Notes:
+# - Replace {{token}} with an actual JWT token obtained from the login endpoint
+# - The OpenRouter API key must be configured in appsettings.json or as an environment variable
+# - Test #3 (text too long) requires manually creating a string longer than 10000 characters
+# - Actual AI generation may take 3-10 seconds depending on the model and text length
+# - Error responses may vary based on the actual AI service errors encountered
+
