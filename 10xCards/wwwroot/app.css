@@ -58,3 +58,119 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Generate Page Styles */
+.flashcard-card {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.flashcard-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.flashcard-card.border-success {
+    border-color: #198754 !important;
+    background-color: #f0f9f5;
+}
+
+.flashcard-card.border-warning {
+    border-color: #ffc107 !important;
+    background-color: #fffef0;
+}
+
+.flashcard-card.border-danger {
+    border-color: #dc3545 !important;
+    background-color: #fef0f0;
+}
+
+.flashcard-card.opacity-50 {
+    opacity: 0.5;
+}
+
+/* Loading skeleton animation */
+.placeholder {
+    background-color: #e9ecef;
+    opacity: 0.5;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.2;
+    }
+}
+
+/* Alert animations */
+.alert {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Character counter styling */
+.form-text.text-success {
+    font-weight: 600;
+}
+
+.form-text.text-danger {
+    font-weight: 600;
+}
+
+/* Button hover effects */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Bootstrap Icons support - using Unicode fallback */
+.bi::before {
+    display: inline-block;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.bi-check-lg::before {
+    content: "✓";
+}
+
+.bi-x-lg::before {
+    content: "✕";
+}
+
+.bi-check-circle::before {
+    content: "✓";
+}
+
+.bi-check-circle-fill::before {
+    content: "✓";
+}
+
+.bi-pencil::before {
+    content: "✎";
+}
+
+.bi-x-circle::before {
+    content: "✕";
+}

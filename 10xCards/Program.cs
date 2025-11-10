@@ -5,6 +5,7 @@ using _10xCards.Endpoints;
 using _10xCards.Extensions;
 using _10xCards.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +21,12 @@ public class Program
 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
+
+		// Configure HttpClient for Blazor components to call own API
+		builder.Services.AddScoped(sp => {
+			var navigationManager = sp.GetRequiredService<NavigationManager>();
+			return new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
+		});
 
 		builder.Services.AddDbContext<ApplicationDbContext>(
 			options => options
@@ -77,6 +84,13 @@ public class Program
 	builder.Services.AddScoped<_10xCards.Services.IAuthService, _10xCards.Services.AuthService>();
 	builder.Services.AddScoped<_10xCards.Services.IFlashcardService, _10xCards.Services.FlashcardService>();
 	builder.Services.AddScoped<_10xCards.Services.IGenerationService, _10xCards.Services.GenerationService>();
+	
+	// Register client-side authentication services
+	builder.Services.AddScoped<_10xCards.Services.IClientAuthenticationService, _10xCards.Services.ClientAuthenticationService>();
+	builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, _10xCards.Services.ClientAuthenticationStateProvider>();
+	
+	// Add cascading authentication state for Blazor components
+	builder.Services.AddCascadingAuthenticationState();
 
 	// Register OpenRouter AI service with HttpClient
 	builder.Services.AddHttpClient<_10xCards.Services.IOpenRouterService, _10xCards.Services.OpenRouterService>(client => {

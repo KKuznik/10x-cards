@@ -1,0 +1,78 @@
+@using Microsoft.Extensions.Logging
+@inject ILogger<ErrorBoundary> Logger
+
+@* Error boundary component to catch and display errors gracefully *@
+<Microsoft.AspNetCore.Components.Web.ErrorBoundary @ref="errorBoundary">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <div class="alert alert-danger" role="alert" aria-live="assertive">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                Wystąpił nieoczekiwany błąd
+            </h4>
+            <p class="mb-0">
+                Przepraszamy, coś poszło nie tak. Prosimy odświeżyć stronę lub spróbować ponownie później.
+            </p>
+            @if (ShowDetails && IsDevelopment)
+            {
+                <hr />
+                <details>
+                    <summary class="cursor-pointer">Szczegóły techniczne (tylko tryb deweloperski)</summary>
+                    <pre class="mt-2 small text-break">@exception.Message</pre>
+                    <pre class="small text-break">@exception.StackTrace</pre>
+                </details>
+            }
+            <div class="mt-3">
+                <button type="button" 
+                        class="btn btn-primary btn-sm" 
+                        @onclick="Recover"
+                        aria-label="Spróbuj ponownie">
+                    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Spróbuj ponownie
+                </button>
+                <a href="/" 
+                   class="btn btn-secondary btn-sm ms-2"
+                   aria-label="Wróć do strony głównej">
+                    <i class="bi bi-house" aria-hidden="true"></i> Strona główna
+                </a>
+            </div>
+        </div>
+    </ErrorContent>
+</Microsoft.AspNetCore.Components.Web.ErrorBoundary>
+
+@code {
+    /// <summary>
+    /// Child content to be wrapped in error boundary
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether to show error details
+    /// </summary>
+    [Parameter]
+    public bool ShowDetails { get; set; } = true;
+
+    /// <summary>
+    /// Whether running in development mode
+    /// </summary>
+    [Inject]
+    private IWebHostEnvironment Environment { get; set; } = default!;
+
+    private Microsoft.AspNetCore.Components.Web.ErrorBoundary? errorBoundary;
+
+    /// <summary>
+    /// Check if running in development mode
+    /// </summary>
+    private bool IsDevelopment => Environment.IsDevelopment();
+
+    /// <summary>
+    /// Recover from error by resetting error boundary
+    /// </summary>
+    private void Recover()
+    {
+        errorBoundary?.Recover();
+    }
+}
+

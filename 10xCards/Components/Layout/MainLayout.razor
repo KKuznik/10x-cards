@@ -1,23 +1,27 @@
 ﻿@inherits LayoutComponentBase
 
+<a href="#main-content" class="skip-link visually-hidden-focusable">
+    Przejdź do treści głównej
+</a>
+
 <div class="page">
-    <div class="sidebar">
+    <header class="top-header">
+        <UserMenu />
+    </header>
+
+    <nav class="sidebar" aria-label="Menu główne">
         <NavMenu />
-    </div>
+    </nav>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
+    <main id="main-content" role="main">
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+<div id="blazor-error-ui" role="alert" aria-live="assertive" data-nosnippet>
+    Wystąpił nieoczekiwany błąd.
+    <a href="." class="reload">Przeładuj</a>
+    <button class="dismiss" aria-label="Zamknij komunikat błędu">🗙</button>
 </div>

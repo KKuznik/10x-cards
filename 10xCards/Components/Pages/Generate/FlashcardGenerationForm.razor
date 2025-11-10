@@ -1,0 +1,142 @@
+@namespace _10xCards.Components.Pages.GenerateComponents
+@using _10xCards.Models
+@* Flashcard generation form component *@
+
+<div class="mb-3">
+    <label for="sourceText" class="form-label">Tekst źródłowy</label>
+    <textarea id="sourceText"
+              class="form-control @GetTextareaClass()"
+              rows="10"
+              value="@SourceText"
+              @oninput="HandleSourceTextInput"
+              placeholder="Wklej tutaj tekst (1000-10000 znaków)..."
+              disabled="@IsDisabled">
+            </textarea>
+    <div class="form-text @GetCharCountClass()">
+        Liczba znaków: @SourceText.Length / 10000
+        @if (SourceText.Length < 1000)
+        {
+            <span class="ms-2">(minimum 1000 znaków)</span>
+        }
+    </div>
+</div>
+
+<div class="mb-3">
+    <label for="modelSelect" class="form-label">Model AI</label>
+    <select id="modelSelect"
+            class="form-select"
+            value="@SelectedModel"
+            @onchange="HandleModelChange"
+            disabled="@IsDisabled"
+            aria-describedby="modelHelp">
+        @foreach (var model in AiModelOptions.AvailableModels)
+        {
+            <option value="@model.Value">@model.DisplayName</option>
+        }
+    </select>
+    <div id="modelHelp" class="form-text small">
+        Wybierz model AI do generowania fiszek. Zalecamy GPT-4 Mini dla optymalnego balansu jakości i szybkości.
+    </div>
+</div>
+
+<button type="button"
+        class="btn btn-primary btn-lg"
+        @onclick="OnGenerate"
+        aria-label="@(IsGenerating ? "Generowanie fiszek w toku" : "Generuj fiszki z tekstu źródłowego")"
+        disabled="@(!IsSourceTextValid || IsDisabled)">
+    @if (IsGenerating)
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span>Generuję...</span>
+    }
+    else
+    {
+        <span>Generuj Fiszki</span>
+    }
+</button>
+
+@code {
+    /// <summary>
+    /// Source text for generation
+    /// </summary>
+    [Parameter]
+    public string SourceText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Selected AI model
+    /// </summary>
+    [Parameter]
+    public string SelectedModel { get; set; } = AiModelOptions.DefaultModel;
+
+    /// <summary>
+    /// Whether the form is disabled (during generation)
+    /// </summary>
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    /// <summary>
+    /// Whether generation is in progress
+    /// </summary>
+    [Parameter]
+    public bool IsGenerating { get; set; }
+
+    /// <summary>
+    /// Event callback when source text changes
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> SourceTextChanged { get; set; }
+
+    /// <summary>
+    /// Event callback when model changes
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> SelectedModelChanged { get; set; }
+
+    /// <summary>
+    /// Event callback when generate button is clicked
+    /// </summary>
+    [Parameter]
+    public EventCallback OnGenerate { get; set; }
+
+    /// <summary>
+    /// Check if source text is valid
+    /// </summary>
+    private bool IsSourceTextValid => SourceText.Length >= 1000 && SourceText.Length <= 10000;
+
+    /// <summary>
+    /// Get CSS class for textarea based on validation
+    /// </summary>
+    private string GetTextareaClass()
+    {
+        if (SourceText.Length == 0) return "";
+        return IsSourceTextValid ? "is-valid" : "is-invalid";
+    }
+
+    /// <summary>
+    /// Get CSS class for character count
+    /// </summary>
+    private string GetCharCountClass()
+    {
+        if (SourceText.Length == 0) return "";
+        return IsSourceTextValid ? "text-success" : "text-danger";
+    }
+
+    /// <summary>
+    /// Handle source text input changes
+    /// </summary>
+    private async Task HandleSourceTextInput(ChangeEventArgs e)
+    {
+        SourceText = e.Value?.ToString() ?? string.Empty;
+        await SourceTextChanged.InvokeAsync(SourceText);
+    }
+
+    /// <summary>
+    /// Handle model selection changes
+    /// </summary>
+    private async Task HandleModelChange(ChangeEventArgs e)
+    {
+        SelectedModel = e.Value?.ToString() ?? AiModelOptions.DefaultModel;
+        await SelectedModelChanged.InvokeAsync(SelectedModel);
+    }
+}
+

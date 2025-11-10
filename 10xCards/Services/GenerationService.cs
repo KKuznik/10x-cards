@@ -227,6 +227,24 @@ public sealed class GenerationService : IGenerationService {
 		// Start stopwatch for duration measurement
 		var stopwatch = Stopwatch.StartNew();
 
+		// MOCK DATA FOR TESTING - Comment out for production
+		List<ProposedFlashcardDto> flashcards = new List<ProposedFlashcardDto> {
+			new ProposedFlashcardDto {
+				Front = "What is the capital of France?",
+				Back = "Paris is the capital and largest city of France."
+			},
+			new ProposedFlashcardDto {
+				Front = "What is the formula for the area of a circle?",
+				Back = "A = πr², where r is the radius of the circle."
+			},
+			new ProposedFlashcardDto {
+				Front = "Who wrote Romeo and Juliet?",
+				Back = "William Shakespeare wrote Romeo and Juliet in the 1590s."
+			}
+		};
+
+		// TODO: UNCOMMENT FOR PRODUCTION - AI service call
+		/*
 		List<ProposedFlashcardDto> flashcards;
 		try {
 			// Call AI service to generate flashcards
@@ -303,6 +321,7 @@ public sealed class GenerationService : IGenerationService {
 
 			return Result<GenerationResponse>.Failure("An unexpected error occurred. Please try again later.");
 		}
+		*/
 
 		// Stop stopwatch and calculate duration in milliseconds
 		stopwatch.Stop();

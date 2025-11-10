@@ -1,7 +1,166 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Strona Główna - 10xCards</PageTitle>
 
-<h1>Hello, world!</h1>
+<_10xCards.Components.Shared.ErrorBoundary>
+<AuthorizeView>
+    <Authorized>
+        <section class="hero-section py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-8 mx-auto text-center">
+                        <h1 class="display-4 mb-4">Witaj w 10xCards!</h1>
+                        <p class="lead mb-4">
+                            Twoja platforma do nauki z wykorzystaniem sztucznej inteligencji. 
+                            Generuj fiszki automatycznie i ucz się efektywniej.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="/generate" class="btn btn-primary btn-lg" aria-label="Przejdź do generowania fiszek">
+                                Generuj Fiszki
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-Welcome to your new app.
+        <section class="features-section py-5 bg-light">
+            <div class="container">
+                <h2 class="text-center mb-5">Jak to działa?</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span class="bi bi-file-text display-4 text-primary" aria-hidden="true"></span>
+                                </div>
+                                <h3 class="h5 card-title">1. Wklej Tekst</h3>
+                                <p class="card-text">
+                                    Wklej materiał do nauki - notatki, artykuły lub dowolny tekst edukacyjny.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span class="bi bi-stars display-4 text-primary" aria-hidden="true"></span>
+                                </div>
+                                <h3 class="h5 card-title">2. AI Generuje Fiszki</h3>
+                                <p class="card-text">
+                                    Sztuczna inteligencja analizuje tekst i tworzy pytania oraz odpowiedzi.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span class="bi bi-check-circle display-4 text-primary" aria-hidden="true"></span>
+                                </div>
+                                <h3 class="h5 card-title">3. Przeglądaj i Edytuj</h3>
+                                <p class="card-text">
+                                    Akceptuj, odrzucaj lub edytuj wygenerowane fiszki przed zapisaniem.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </Authorized>
+
+    <NotAuthorized>
+        <section class="hero-section py-5">
+            <div class="container">
+                <div class="row align-items-center min-vh-75">
+                    <div class="col-lg-8 mx-auto text-center">
+                        <h1 class="display-3 mb-4">10xCards</h1>
+                        <p class="lead mb-4">
+                            Ucz się 10 razy szybciej z fiszkami generowanymi przez AI
+                        </p>
+                        <p class="mb-5">
+                            Wklej swoje notatki, a sztuczna inteligencja automatycznie utworzy dla Ciebie 
+                            spersonalizowane fiszki edukacyjne. Oszczędzaj czas i ucz się efektywniej.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="/register" class="btn btn-primary btn-lg" aria-label="Zarejestruj się aby rozpocząć">
+                                Rozpocznij Za Darmo
+                            </a>
+                            <a href="/login" class="btn btn-outline-primary btn-lg" aria-label="Zaloguj się do swojego konta">
+                                Zaloguj Się
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features-section py-5 bg-light">
+            <div class="container">
+                <h2 class="text-center mb-5">Dlaczego 10xCards?</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span class="bi bi-lightning-charge display-4 text-primary" aria-hidden="true"></span>
+                                </div>
+                                <h3 class="h5 card-title">Szybka Generacja</h3>
+                                <p class="card-text">
+                                    Twórz dziesiątki fiszek w kilka sekund dzięki zaawansowanej AI.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span class="bi bi-pencil-square display-4 text-primary" aria-hidden="true"></span>
+                                </div>
+                                <h3 class="h5 card-title">Pełna Kontrola</h3>
+                                <p class="card-text">
+                                    Edytuj, akceptuj lub odrzucaj każdą fiszkę przed zapisaniem.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <span class="bi bi-cpu display-4 text-primary" aria-hidden="true"></span>
+                                </div>
+                                <h3 class="h5 card-title">Inteligentne Modele</h3>
+                                <p class="card-text">
+                                    Wybierz spośród najlepszych modeli AI: GPT-4, Claude i innych.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto text-center">
+                        <h2 class="mb-4">Gotowy aby rozpocząć naukę?</h2>
+                        <p class="lead mb-4">
+                            Dołącz do tysięcy użytkowników, którzy przyspieszyli swoją naukę z 10xCards.
+                        </p>
+                        <a href="/register" class="btn btn-primary btn-lg" aria-label="Zarejestruj się teraz">
+                            Zarejestruj Się Teraz
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>
+</_10xCards.Components.Shared.ErrorBoundary>

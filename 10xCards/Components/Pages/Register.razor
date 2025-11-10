@@ -1,0 +1,114 @@
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Rejestracja - 10xCards</PageTitle>
+
+<_10xCards.Components.Shared.ErrorBoundary>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm mt-5">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4">Rejestracja</h2>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Błąd:</strong> @errorMessage
+                            <button type="button" class="btn-close" @onclick="@(() => errorMessage = null)" aria-label="Zamknij"></button>
+                        </div>
+                    }
+
+                    <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+                        <AntiforgeryToken />
+                        <DataAnnotationsValidator />
+
+                        <fieldset>
+                            <legend class="visually-hidden">Dane rejestracji</legend>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <InputText 
+                                    id="email" 
+                                    class="form-control" 
+                                    @bind-Value="registerModel.Email" 
+                                    placeholder="Wprowadź adres email"
+                                    aria-label="Adres email"
+                                    aria-required="true"
+                                    aria-invalid="@(HasFieldError(nameof(registerModel.Email)) ? "true" : "false")"
+                                    aria-describedby="email-validation"
+                                    autocomplete="username"
+                                    disabled="@isSubmitting" />
+                                <div id="email-validation" role="alert" aria-live="polite">
+                                    <ValidationMessage For="@(() => registerModel.Email)" class="text-danger small mt-1" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Hasło</label>
+                                <InputText 
+                                    id="password" 
+                                    type="password" 
+                                    class="form-control" 
+                                    @bind-Value="registerModel.Password" 
+                                    placeholder="Wprowadź hasło"
+                                    aria-label="Hasło"
+                                    aria-required="true"
+                                    aria-invalid="@(HasFieldError(nameof(registerModel.Password)) ? "true" : "false")"
+                                    aria-describedby="passwordHelp password-validation"
+                                    autocomplete="new-password"
+                                    disabled="@isSubmitting" />
+                                <div id="passwordHelp" class="form-text small">
+                                    Hasło musi mieć co najmniej 8 znaków i zawierać wielką literę, małą literę, cyfrę oraz znak specjalny.
+                                </div>
+                                <div id="password-validation" role="alert" aria-live="polite">
+                                    <ValidationMessage For="@(() => registerModel.Password)" class="text-danger small mt-1" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Potwierdź hasło</label>
+                                <InputText 
+                                    id="confirmPassword" 
+                                    type="password" 
+                                    class="form-control" 
+                                    @bind-Value="registerModel.ConfirmPassword" 
+                                    placeholder="Wprowadź hasło ponownie"
+                                    aria-label="Potwierdź hasło"
+                                    aria-required="true"
+                                    aria-invalid="@(HasFieldError(nameof(registerModel.ConfirmPassword)) ? "true" : "false")"
+                                    aria-describedby="confirmPassword-validation"
+                                    autocomplete="new-password"
+                                    disabled="@isSubmitting" />
+                                <div id="confirmPassword-validation" role="alert" aria-live="polite">
+                                    <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger small mt-1" />
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting" aria-label="Zarejestruj się">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Rejestrowanie...</span>
+                                }
+                                else
+                                {
+                                    <span>Zarejestruj się</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    <hr />
+
+                    <p class="text-center mb-0">
+                        Masz już konto? <a href="/login" class="text-decoration-none">Zaloguj się</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</_10xCards.Components.Shared.ErrorBoundary>

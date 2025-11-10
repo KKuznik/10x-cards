@@ -1,0 +1,84 @@
+@* Reusable button with loading state *@
+<button type="@ButtonType"
+        class="btn btn-@ButtonStyle @CssClass"
+        @onclick="OnClick"
+        disabled="@(IsDisabled || IsLoading)"
+        aria-label="@AriaLabel">
+    @if (IsLoading)
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span>@LoadingText</span>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(IconClass))
+        {
+            <i class="@IconClass" aria-hidden="true"></i>
+            <span> </span>
+        }
+        <span>@Text</span>
+    }
+</button>
+
+@code {
+    /// <summary>
+    /// Button text
+    /// </summary>
+    [Parameter]
+    public string Text { get; set; } = "Submit";
+
+    /// <summary>
+    /// Text to show when loading
+    /// </summary>
+    [Parameter]
+    public string LoadingText { get; set; } = "Loading...";
+
+    /// <summary>
+    /// Bootstrap button style (primary, secondary, success, danger, etc.)
+    /// </summary>
+    [Parameter]
+    public string ButtonStyle { get; set; } = "primary";
+
+    /// <summary>
+    /// Button type (button, submit, reset)
+    /// </summary>
+    [Parameter]
+    public string ButtonType { get; set; } = "button";
+
+    /// <summary>
+    /// Whether the button is in loading state
+    /// </summary>
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// Whether the button is disabled
+    /// </summary>
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    /// <summary>
+    /// Icon class (e.g., bi bi-check)
+    /// </summary>
+    [Parameter]
+    public string? IconClass { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    /// <summary>
+    /// ARIA label for accessibility
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Click event callback
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+}
+

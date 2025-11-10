@@ -1,30 +1,36 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@rendermode InteractiveServer
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">10xCards</a>
+        <a class="navbar-brand" href="" aria-label="Strona główna 10xCards">10xCards</a>
+        <button type="button"
+                class="navbar-toggler"
+                @onclick="ToggleNavMenu"
+                aria-label="@(navMenuExpanded ? "Zamknij menu nawigacji" : "Otwórz menu nawigacji")"
+                aria-expanded="@navMenuExpanded"
+                aria-controls="nav-menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+<div class="nav-scrollable @NavMenuCssClass" id="nav-menu" @onclick="CollapseNavMenu" @onkeydown="HandleKeyDown" tabindex="-1">
+    <nav class="nav flex-column" role="navigation" aria-label="Nawigacja główna">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All" aria-label="Przejdź do strony głównej">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> 
+                <span>Strona główna</span>
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+        @if (isAuthenticated) {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="generate" aria-label="Przejdź do generowania fiszek">
+                    <span class="bi bi-lightbulb-fill-nav-menu" aria-hidden="true"></span> 
+                    <span>Generuj</span>
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
 

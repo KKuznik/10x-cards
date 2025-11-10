@@ -1,0 +1,632 @@
+@page "/generate"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@using _10xCards.Models
+@using _10xCards.Models.Requests
+@using _10xCards.Models.Responses
+@using _10xCards.Models.ViewModels
+@using _10xCards.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using System.Text.Encodings.Web
+@inject IGenerationService GenerationService
+@inject IFlashcardService FlashcardService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject ILogger<Generate> Logger
+
+<PageTitle>Generowanie Fiszek - 10xCards</PageTitle>
+
+<div class="container mt-5">
+	<div class="row">
+		<div class="col-12">
+			<h1 class="mb-4">Generowanie Fiszek z AI</h1>
+
+			@* Success Message *@
+			@if (!string.IsNullOrEmpty(successMessage)) {
+				<div class="alert alert-success alert-dismissible fade show" role="status" aria-live="polite" aria-atomic="true">
+					<strong>Sukces!</strong> @successMessage
+					<button type="button" class="btn-close" @onclick="@(() => successMessage = null)" aria-label="Zamknij komunikat sukcesu"></button>
+				</div>
+			}
+
+			@* Error Message *@
+			@if (!string.IsNullOrEmpty(errorMessage)) {
+				<div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true">
+					<strong>Błąd!</strong> @errorMessage
+					<button type="button" class="btn-close" @onclick="@(() => errorMessage = null)" aria-label="Zamknij komunikat błędu"></button>
+				</div>
+			}
+
+		@* Generation Form *@
+		@* SECURITY: CSRF protection is automatically provided by Blazor Server for @onclick events *@
+		<_10xCards.Components.Pages.GenerateComponents.FlashcardGenerationForm
+			SourceText="@sourceText"
+			SourceTextChanged="@((string value) => sourceText = value)"
+			SelectedModel="@selectedModel"
+			SelectedModelChanged="@((string value) => selectedModel = value)"
+			IsDisabled="@(state == GenerationState.Generating || state == GenerationState.Saving)"
+			IsGenerating="@(state == GenerationState.Generating)"
+			OnGenerate="@GenerateFlashcardsAsync" />
+
+			@* Loading Skeleton *@
+			@if (state == GenerationState.Generating) {
+				<div class="mt-4" aria-busy="true" aria-live="polite" role="status">
+					<h4 class="mb-3">Generuję propozycje...</h4>
+					<div class="visually-hidden" aria-live="assertive">
+						Trwa generowanie fiszek. Proszę czekać.
+					</div>
+					@for (int i = 0; i < 5; i++) {
+						<div class="card mb-3" aria-hidden="true">
+							<div class="card-body">
+								<div class="placeholder-glow">
+									<span class="placeholder col-7"></span>
+									<span class="placeholder col-4"></span>
+									<span class="placeholder col-4"></span>
+									<span class="placeholder col-6"></span>
+									<span class="placeholder col-8"></span>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			}
+
+			@* Flashcards List *@
+			@if (state == GenerationState.Generated || state == GenerationState.Saving || state == GenerationState.Saved) {
+				<div class="mt-4" id="flashcards-section" aria-busy="@(state == GenerationState.Saving ? "true" : "false")">
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h4>Wygenerowane propozycje (@flashcards.Count)</h4>
+						<span class="badge bg-info" role="status" aria-live="polite">Zaakceptowano: @AcceptedCount</span>
+					</div>
+					@if (state == GenerationState.Saving) {
+						<div class="visually-hidden" aria-live="assertive">
+							Zapisywanie fiszek w toku. Proszę czekać.
+						</div>
+					}
+
+					<div class="row">
+						@foreach (var (flashcard, index) in flashcards.Select((f, i) => (f, i))) {
+							<div class="col-12 col-md-6 col-lg-4 mb-3">
+								<div class="card h-100 flashcard-card @GetFlashcardStatusClass(flashcard)" role="article" aria-label="Fiszka @(index + 1), status: @GetFlashcardStatusText(flashcard)">
+									<div class="card-body">
+										@if (flashcard.IsInEditMode) {
+											@* Edit Mode *@
+											<div class="mb-3">
+												<label class="form-label fw-bold">Przód fiszki</label>
+												<textarea class="form-control @GetEditValidationClass(flashcard.Front, 200)"
+														  rows="2"
+														  maxlength="200"
+														  @bind="flashcard.Front">
+															</textarea>
+												<div class="form-text">@flashcard.Front.Length / 200 znaków</div>
+											</div>
+											<div class="mb-3">
+												<label class="form-label fw-bold">Tył fiszki</label>
+												<textarea class="form-control @GetEditValidationClass(flashcard.Back, 500)"
+														  rows="3"
+														  maxlength="500"
+														  @bind="flashcard.Back">
+															</textarea>
+												<div class="form-text">@flashcard.Back.Length / 500 znaków</div>
+											</div>
+											<div class="d-flex gap-2">
+												<button type="button"
+														class="btn btn-success btn-sm"
+														@onclick="() => SaveEdit(index)"
+														aria-label="Zapisz zmiany w fiszce"
+														disabled="@(!IsEditValid(flashcard))">
+													<i class="bi bi-check-lg" aria-hidden="true"></i> Zapisz zmiany
+												</button>
+												<button type="button"
+														class="btn btn-secondary btn-sm"
+														@onclick="() => CancelEdit(index)"
+														aria-label="Anuluj edycję fiszki">
+													<i class="bi bi-x-lg" aria-hidden="true"></i> Anuluj
+												</button>
+											</div>
+										}
+										else {
+											@* View Mode *@
+											@* SECURITY: Content is automatically HTML-encoded by Blazor to prevent XSS *@
+											<div class="mb-3">
+												<h6 class="text-muted mb-1">Przód:</h6>
+												<p class="mb-0">@SanitizeContent(flashcard.Front)</p>
+											</div>
+											<div class="mb-3">
+												<h6 class="text-muted mb-1">Tył:</h6>
+												<p class="mb-0">@SanitizeContent(flashcard.Back)</p>
+											</div>
+											@if (flashcard.IsEdited) {
+												<span class="badge bg-warning text-dark mb-2" role="status">Edytowana</span>
+											}
+											@* WCAG: Textual status indicators for screen readers *@
+											<div class="visually-hidden" role="status" aria-live="polite">
+												Status fiszki: @GetFlashcardStatusText(flashcard)
+											</div>
+											<div class="d-flex gap-2">
+												@if (flashcard.Status != FlashcardStatus.Accepted) {
+													<button type="button"
+															class="btn btn-success btn-sm"
+															@onclick="() => AcceptFlashcard(index)"
+															aria-label="Akceptuj fiszkę">
+														<i class="bi bi-check-circle" aria-hidden="true"></i> Akceptuj
+													</button>
+												}
+												@if (flashcard.Status == FlashcardStatus.Accepted) {
+													<button type="button"
+															class="btn btn-outline-success btn-sm" 
+															disabled
+															aria-label="Fiszka zaakceptowana">
+														<i class="bi bi-check-circle-fill" aria-hidden="true"></i> Zaakceptowana
+													</button>
+												}
+												<button type="button"
+														class="btn btn-primary btn-sm"
+														@onclick="() => EditFlashcard(index)"
+														aria-label="Edytuj fiszkę">
+													<i class="bi bi-pencil" aria-hidden="true"></i> Edytuj
+												</button>
+												<button type="button"
+														class="btn btn-danger btn-sm"
+														@onclick="() => RejectFlashcard(index)"
+														aria-label="Odrzuć fiszkę">
+													<i class="bi bi-x-circle" aria-hidden="true"></i> Odrzuć
+												</button>
+											</div>
+										}
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+
+					@* Bulk Actions *@
+					@if (flashcards.Any(f => f.Status != FlashcardStatus.Rejected)) {
+						<div class="card bg-light mt-4">
+							<div class="card-body">
+								<h5 class="card-title">Zapisz fiszki</h5>
+								<p class="text-muted mb-3">
+									Wybierz, które fiszki chcesz zapisać do swojej kolekcji.
+								</p>
+								<div class="d-flex gap-2 flex-wrap">
+									<button type="button"
+											class="btn btn-primary"
+											@onclick="SaveAcceptedFlashcardsAsync"
+											aria-label="Zapisz @AcceptedCount zaakceptowanych fiszek"
+											disabled="@(AcceptedCount == 0 || currentSaveAction != SaveAction.None)">
+										@if (currentSaveAction == SaveAction.SaveAccepted) {
+											<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+										}
+										<span>Zapisz zaakceptowane (@AcceptedCount)</span>
+									</button>
+									<button type="button"
+											class="btn btn-secondary"
+											@onclick="SaveAllFlashcardsAsync"
+											aria-label="Zapisz wszystkie @flashcards.Count(f => f.Status != FlashcardStatus.Rejected) nieodrzucone fiszki"
+											disabled="@(flashcards.All(f => f.Status == FlashcardStatus.Rejected) || currentSaveAction != SaveAction.None)">
+										@if (currentSaveAction == SaveAction.SaveAll) {
+											<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+										}
+										<span>Zapisz wszystkie nieodrzucone (@flashcards.Count(f => f.Status != FlashcardStatus.Rejected))</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+@code {
+	// Error message constants for consistency
+	private const string ERROR_TEXT_REQUIRED = "Tekst źródłowy jest wymagany";
+	private const string ERROR_TEXT_TOO_SHORT = "Tekst musi zawierać co najmniej 1000 znaków";
+	private const string ERROR_TEXT_TOO_LONG = "Tekst nie może przekraczać 10000 znaków";
+	private const string ERROR_MODEL_REQUIRED = "Model AI musi być wybrany";
+	private const string ERROR_USER_NOT_IDENTIFIED = "Nie można zidentyfikować użytkownika";
+	private const string ERROR_GENERATION_FAILED = "Błąd podczas generowania fiszek";
+	private const string ERROR_NO_RESPONSE = "Nie otrzymano odpowiedzi z serwera";
+	private const string ERROR_SAVE_FAILED = "Błąd podczas zapisywania fiszek";
+	private const string ERROR_INVALID_FLASHCARD_FRONT = "Jedna z fiszek ma nieprawidłową treść (przód)";
+	private const string ERROR_INVALID_FLASHCARD_BACK = "Jedna z fiszek ma nieprawidłową treść (tył)";
+	private const string ERROR_GENERIC = "Wystąpił nieoczekiwany błąd";
+	private const string ERROR_NETWORK = "Błąd połączenia z serwerem. Sprawdź połączenie internetowe.";
+	private const string ERROR_TIMEOUT = "Żądanie przekroczyło limit czasu. Spróbuj ponownie.";
+
+	// Save action tracking
+	private enum SaveAction
+	{
+		None,
+		SaveAccepted,
+		SaveAll
+	}
+
+	// Form state
+	private string sourceText = string.Empty;
+	private string selectedModel = AiModelOptions.DefaultModel;
+
+	// Generation state
+	private GenerationState state = GenerationState.Idle;
+	private long? currentGenerationId = null;
+	private SaveAction currentSaveAction = SaveAction.None;
+
+	// Flashcards
+	private List<FlashcardViewModel> flashcards = new();
+
+	// Messages
+	private string? errorMessage = null;
+	private string? successMessage = null;
+
+	// Validation
+	private bool IsSourceTextValid =>
+		sourceText.Length >= 1000 && sourceText.Length <= 10000;
+
+	private int AcceptedCount =>
+		flashcards.Count(f => f.Status == FlashcardStatus.Accepted);
+
+	// Lifecycle methods
+	protected override async Task OnInitializedAsync() {
+		// Authentication is now handled by [Authorize] attribute
+		// No need for manual check
+	}
+
+	// Generate flashcards
+	private async Task GenerateFlashcardsAsync() {
+		ClearMessages();
+
+		// Guard clause: Validate source text length (defense in depth)
+		if (string.IsNullOrWhiteSpace(sourceText)) {
+			errorMessage = ERROR_TEXT_REQUIRED;
+			return;
+		}
+
+		if (sourceText.Length < 1000) {
+			errorMessage = ERROR_TEXT_TOO_SHORT;
+			return;
+		}
+
+		if (sourceText.Length > 10000) {
+			errorMessage = ERROR_TEXT_TOO_LONG;
+			return;
+		}
+
+		// Guard clause: Validate model selection
+		if (string.IsNullOrWhiteSpace(selectedModel)) {
+			errorMessage = ERROR_MODEL_REQUIRED;
+			return;
+		}
+
+		state = GenerationState.Generating;
+
+		try {
+			// Get userId from authentication state
+			var userId = await GetUserIdAsync();
+			if (userId == Guid.Empty) {
+				errorMessage = ERROR_USER_NOT_IDENTIFIED;
+				state = GenerationState.Error;
+				return;
+			}
+
+			var request = new GenerateFlashcardsRequest {
+				SourceText = sourceText,
+				Model = selectedModel
+			};
+
+			// Call generation service with 60 second timeout (AI operations take longer)
+			var result = await GenerationService.GenerateFlashcardsAsync(userId, request, CreateTimeoutToken(60));
+
+			if (!result.IsSuccess) {
+				errorMessage = result.ErrorMessage ?? ERROR_GENERATION_FAILED;
+				state = GenerationState.Error;
+				return;
+			}
+
+			if (result.Value == null) {
+				errorMessage = ERROR_NO_RESPONSE;
+				state = GenerationState.Error;
+				return;
+			}
+
+			currentGenerationId = result.Value.Id;
+
+			// Map to ViewModels
+			flashcards = result.Value.Flashcards.Select(f => new FlashcardViewModel {
+				OriginalFront = f.Front,
+				OriginalBack = f.Back,
+				Front = f.Front,
+				Back = f.Back,
+				Status = FlashcardStatus.Pending,
+				IsEdited = false,
+				IsInEditMode = false
+			}).ToList();
+
+			state = GenerationState.Generated;
+
+			// Scroll to flashcards section
+			await Task.Delay(100);
+		}
+		catch (TaskCanceledException ex) {
+			Logger.LogWarning(ex, "Flashcard generation timeout after 60 seconds");
+			errorMessage = ERROR_TIMEOUT;
+			state = GenerationState.Error;
+		}
+		catch (HttpRequestException ex) {
+			Logger.LogWarning(ex, "Network error during flashcard generation");
+			errorMessage = ERROR_NETWORK;
+			state = GenerationState.Error;
+		}
+		catch (InvalidOperationException ex) {
+			Logger.LogWarning(ex, "Invalid operation during flashcard generation");
+			errorMessage = "Błąd podczas przetwarzania odpowiedzi. Spróbuj ponownie.";
+			state = GenerationState.Error;
+		}
+		catch (Exception ex) {
+			Logger.LogError(ex, "Unexpected error during flashcard generation");
+			errorMessage = $"{ERROR_GENERIC} podczas generowania fiszek";
+			state = GenerationState.Error;
+		}
+	}
+
+	// Save accepted flashcards
+	private async Task SaveAcceptedFlashcardsAsync() {
+		currentSaveAction = SaveAction.SaveAccepted;
+		await SaveFlashcardsAsync(false);
+	}
+
+	// Save all non-rejected flashcards
+	private async Task SaveAllFlashcardsAsync() {
+		currentSaveAction = SaveAction.SaveAll;
+		await SaveFlashcardsAsync(true);
+	}
+
+	// Save flashcards to database
+	private async Task SaveFlashcardsAsync(bool saveAll) {
+		// Guard clause: Check generation ID
+		if (!currentGenerationId.HasValue) {
+			errorMessage = "Brak identyfikatora generowania";
+			return;
+		}
+
+		var flashcardsToSave = saveAll
+			? flashcards.Where(f => f.Status != FlashcardStatus.Rejected).ToList()
+			: flashcards.Where(f => f.Status == FlashcardStatus.Accepted).ToList();
+
+		// Guard clause: Check if any flashcards to save
+		if (flashcardsToSave.Count == 0) {
+			errorMessage = saveAll
+				? "Wszystkie fiszki zostały odrzucone"
+				: "Nie zaakceptowano żadnych fiszek";
+			return;
+		}
+
+		// Guard clause: Validate flashcard content before saving
+		foreach (var flashcard in flashcardsToSave) {
+			if (string.IsNullOrWhiteSpace(flashcard.Front) || flashcard.Front.Length > 200) {
+				errorMessage = ERROR_INVALID_FLASHCARD_FRONT;
+				return;
+			}
+			if (string.IsNullOrWhiteSpace(flashcard.Back) || flashcard.Back.Length > 500) {
+				errorMessage = ERROR_INVALID_FLASHCARD_BACK;
+				return;
+			}
+		}
+
+		ClearMessages();
+		state = GenerationState.Saving;
+
+		try {
+			// Get userId from authentication state
+			var userId = await GetUserIdAsync();
+			if (userId == Guid.Empty) {
+				errorMessage = ERROR_USER_NOT_IDENTIFIED;
+				state = GenerationState.Error;
+				return;
+			}
+
+			var request = new CreateFlashcardsBatchRequest {
+				GenerationId = currentGenerationId.Value,
+				Flashcards = flashcardsToSave.Select(f => new BatchFlashcardItem {
+					Front = f.Front,
+					Back = f.Back,
+					Source = f.Source
+				}).ToList()
+			};
+
+			// Call flashcard service with 30 second timeout
+			var result = await FlashcardService.CreateFlashcardsBatchAsync(userId, request, CreateTimeoutToken(30));
+
+			if (!result.IsSuccess) {
+				errorMessage = result.ErrorMessage ?? ERROR_SAVE_FAILED;
+				state = GenerationState.Error;
+				return;
+			}
+
+			if (result.Value == null) {
+				errorMessage = "Nie otrzymano potwierdzenia zapisu";
+				state = GenerationState.Error;
+				return;
+			}
+
+			successMessage = $"Pomyślnie zapisano {result.Value.Created} fiszek!";
+			state = GenerationState.Saved;
+
+			// Reset after 3 seconds
+			await Task.Delay(3000);
+			ResetState();
+		}
+		catch (TaskCanceledException ex) {
+			Logger.LogWarning(ex, "Flashcard save timeout after 30 seconds");
+			errorMessage = ERROR_TIMEOUT;
+			state = GenerationState.Error;
+		}
+		catch (HttpRequestException ex) {
+			Logger.LogWarning(ex, "Network error during flashcard save");
+			errorMessage = ERROR_NETWORK;
+			state = GenerationState.Error;
+		}
+		catch (InvalidOperationException ex) {
+			Logger.LogWarning(ex, "Invalid operation during flashcard save");
+			errorMessage = "Błąd podczas zapisywania. Dane mogą być nieprawidłowe.";
+			state = GenerationState.Error;
+		}
+		catch (Exception ex) {
+			Logger.LogError(ex, "Unexpected error during flashcard save");
+			errorMessage = $"{ERROR_GENERIC} podczas zapisywania fiszek";
+			state = GenerationState.Error;
+		}
+		finally {
+			currentSaveAction = SaveAction.None;
+		}
+	}
+
+	// Flashcard actions
+	private void AcceptFlashcard(int index) {
+		if (index >= 0 && index < flashcards.Count) {
+			flashcards[index].Status = FlashcardStatus.Accepted;
+		}
+	}
+
+	private void EditFlashcard(int index) {
+		if (index >= 0 && index < flashcards.Count) {
+			flashcards[index].IsInEditMode = true;
+		}
+	}
+
+	private void SaveEdit(int index) {
+		if (index >= 0 && index < flashcards.Count) {
+			var flashcard = flashcards[index];
+
+			if (!IsEditValid(flashcard)) {
+				return;
+			}
+
+			flashcard.IsInEditMode = false;
+			flashcard.IsEdited = flashcard.Front != flashcard.OriginalFront ||
+								  flashcard.Back != flashcard.OriginalBack;
+			flashcard.Status = FlashcardStatus.Accepted;
+		}
+	}
+
+	private void CancelEdit(int index) {
+		if (index >= 0 && index < flashcards.Count) {
+			var flashcard = flashcards[index];
+			flashcard.Front = flashcard.IsEdited ? flashcard.Front : flashcard.OriginalFront;
+			flashcard.Back = flashcard.IsEdited ? flashcard.Back : flashcard.OriginalBack;
+			flashcard.IsInEditMode = false;
+		}
+	}
+
+	private void RejectFlashcard(int index) {
+		if (index >= 0 && index < flashcards.Count) {
+			flashcards[index].Status = FlashcardStatus.Rejected;
+		}
+	}
+
+	// Validation helpers
+	private bool IsEditValid(FlashcardViewModel flashcard) {
+		return !string.IsNullOrWhiteSpace(flashcard.Front) &&
+			   flashcard.Front.Length >= 1 &&
+			   flashcard.Front.Length <= 200 &&
+			   !string.IsNullOrWhiteSpace(flashcard.Back) &&
+			   flashcard.Back.Length >= 1 &&
+			   flashcard.Back.Length <= 500;
+	}
+
+	// UI helper methods
+	private string GetFlashcardStatusClass(FlashcardViewModel flashcard) {
+		return flashcard.Status switch {
+			FlashcardStatus.Accepted => "border-success",
+			FlashcardStatus.Rejected => "border-danger opacity-50",
+			_ => "border-warning"
+		};
+	}
+
+	private string GetEditValidationClass(string value, int maxLength) {
+		if (string.IsNullOrWhiteSpace(value)) return "is-invalid";
+		if (value.Length > maxLength) return "is-invalid";
+		return "is-valid";
+	}
+
+	/// <summary>
+	/// Get textual status for screen readers (WCAG compliance)
+	/// </summary>
+	private string GetFlashcardStatusText(FlashcardViewModel flashcard) {
+		return flashcard.Status switch {
+			FlashcardStatus.Accepted => "Zaakceptowana",
+			FlashcardStatus.Rejected => "Odrzucona",
+			_ => "Oczekująca"
+		};
+	}
+
+	// State management
+	private void ClearMessages() {
+		errorMessage = null;
+		successMessage = null;
+	}
+
+	private void ResetState() {
+		sourceText = string.Empty;
+		state = GenerationState.Idle;
+		currentGenerationId = null;
+		flashcards.Clear();
+		ClearMessages();
+	}
+
+	/// <summary>
+	/// Get userId from authentication state claims
+	/// </summary>
+	private async Task<Guid> GetUserIdAsync() {
+		try {
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = authState.User;
+
+			if (user?.Identity?.IsAuthenticated != true) {
+				return Guid.Empty;
+			}
+
+			// Try to get userId from NameIdentifier claim (standard claim for user ID)
+			var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+				?? user.FindFirst("sub")?.Value;
+
+			if (string.IsNullOrEmpty(userIdClaim)) {
+				return Guid.Empty;
+			}
+
+			return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+		}
+		catch (Exception) {
+			return Guid.Empty;
+		}
+	}
+
+	/// <summary>
+	/// Sanitize content to prevent XSS attacks from AI-generated content
+	/// </summary>
+	/// <param name="content">Content to sanitize</param>
+	/// <returns>Sanitized content safe for display</returns>
+	private string SanitizeContent(string content) {
+		// Guard clause: handle null or empty content
+		if (string.IsNullOrEmpty(content)) {
+			return string.Empty;
+		}
+
+		// SECURITY: Encode HTML to prevent XSS attacks
+		// This is defense-in-depth as Blazor already encodes @ expressions
+		return HtmlEncoder.Default.Encode(content);
+	}
+
+	/// <summary>
+	/// Creates a CancellationToken with a timeout to prevent hanging operations
+	/// </summary>
+	/// <param name="timeoutSeconds">Timeout in seconds</param>
+	/// <returns>CancellationToken that will be cancelled after timeout</returns>
+	private static CancellationToken CreateTimeoutToken(int timeoutSeconds) {
+		var cts = new CancellationTokenSource();
+		cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+		return cts.Token;
+	}
+}

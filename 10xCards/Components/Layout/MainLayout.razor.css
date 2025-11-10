@@ -4,12 +4,25 @@
     flex-direction: column;
 }
 
+.top-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
 main {
     flex: 1;
 }
 
+/* Light theme: Clean white background with subtle shadow for depth */
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-color: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .top-row {

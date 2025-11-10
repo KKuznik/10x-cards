@@ -1,0 +1,28 @@
+@rendermode InteractiveServer
+
+<div class="user-menu" role="region" aria-label="Menu użytkownika">
+	@if (isAuthenticated) {
+		<span class="text-dark me-3" aria-label="Zalogowany jako">@username</span>
+		<button class="btn btn-sm btn-outline-danger" 
+		        @onclick="HandleLogout"
+		        aria-label="Wyloguj się z konta">
+			<span class="bi bi-box-arrow-right" aria-hidden="true"></span> 
+			<span>Wyloguj</span>
+		</button>
+	}
+	else {
+		<button class="btn btn-sm btn-outline-primary me-2" 
+		        @onclick="NavigateToLogin"
+		        aria-label="Przejdź do strony logowania">
+			<span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> 
+			<span>Zaloguj</span>
+		</button>
+		<button class="btn btn-sm btn-primary" 
+		        @onclick="NavigateToRegister"
+		        aria-label="Przejdź do strony rejestracji">
+			<span class="bi bi-person-plus" aria-hidden="true"></span> 
+			<span>Rejestracja</span>
+		</button>
+	}
+</div>
+

@@ -1,0 +1,87 @@
+@* Reusable alert message component with WCAG 2.0 compliance *@
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-@AlertTypeClass alert-dismissible fade show" 
+         role="@AlertRole" 
+         aria-live="@AriaLive" 
+         aria-atomic="true">
+        <strong>@AlertTitle</strong> @Message
+        @if (Dismissible)
+        {
+            <button type="button" 
+                    class="btn-close" 
+                    @onclick="OnDismiss" 
+                    aria-label="Zamknij komunikat"></button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Alert message content
+    /// </summary>
+    [Parameter]
+    public string? Message { get; set; }
+
+    /// <summary>
+    /// Alert type (Success, Error, Warning, Info)
+    /// </summary>
+    [Parameter]
+    public AlertType Type { get; set; } = AlertType.Info;
+
+    /// <summary>
+    /// Whether the alert can be dismissed
+    /// </summary>
+    [Parameter]
+    public bool Dismissible { get; set; } = true;
+
+    /// <summary>
+    /// Callback when alert is dismissed
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDismissed { get; set; }
+
+    /// <summary>
+    /// Get Bootstrap alert class based on type
+    /// </summary>
+    private string AlertTypeClass => Type switch
+    {
+        AlertType.Success => "success",
+        AlertType.Error => "danger",
+        AlertType.Warning => "warning",
+        AlertType.Info => "info",
+        _ => "info"
+    };
+
+    /// <summary>
+    /// Get alert title based on type
+    /// </summary>
+    private string AlertTitle => Type switch
+    {
+        AlertType.Success => "Sukces!",
+        AlertType.Error => "Błąd!",
+        AlertType.Warning => "Uwaga!",
+        AlertType.Info => "Informacja:",
+        _ => "Informacja:"
+    };
+
+    /// <summary>
+    /// Get ARIA role based on type
+    /// </summary>
+    private string AlertRole => Type == AlertType.Error ? "alert" : "status";
+
+    /// <summary>
+    /// Get ARIA live priority based on type
+    /// </summary>
+    private string AriaLive => Type == AlertType.Error ? "assertive" : "polite";
+
+    /// <summary>
+    /// Handle dismiss action
+    /// </summary>
+    private async Task OnDismiss()
+    {
+        Message = null;
+        await OnDismissed.InvokeAsync();
+    }
+}
+
