@@ -98,6 +98,12 @@ public class Program
 		client.Timeout = TimeSpan.FromSeconds(30);
 	});
 
+	// Register ChatGPT AI service with HttpClient
+	builder.Services.AddHttpClient<_10xCards.Services.IChatGptService, _10xCards.Services.ChatGptService>(client => {
+		client.BaseAddress = new Uri("https://api.openai.com/v1/");
+		client.Timeout = TimeSpan.FromSeconds(30);
+	});
+
 	var app = builder.Build();
 
 		app.MigrateDatabase();

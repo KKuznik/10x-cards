@@ -73,7 +73,7 @@ public static class GenerationEndpoints {
 		})
 		.WithName("GenerateFlashcards")
 		.WithSummary("Generate flashcard suggestions using AI")
-		.WithDescription("Generates flashcard suggestions from source text using OpenRouter AI models")
+		.WithDescription("Generates flashcard suggestions from source text using OpenAi AI models")
 		.Produces<GenerationResponse>(StatusCodes.Status201Created)
 		.ProducesValidationProblem(StatusCodes.Status400BadRequest)
 		.Produces(StatusCodes.Status401Unauthorized)

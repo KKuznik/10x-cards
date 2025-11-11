@@ -18,7 +18,7 @@
 - **Backend**: ASP.NET Core (target framework: **net9.0**)
 - **Auth**: ASP.NET Core Identity (planned)
 - **Data**: Entity Framework Core with PostgreSQL (planned)
-- **AI**: OpenRouter.ai API for access to multiple LLM providers (planned)
+- **AI**: OpenAi API for access to multiple LLM providers (planned)
 - **CI/CD**: GitHub Actions (planned)
 - **Hosting**: Docker image deployment (e.g., DigitalOcean) (planned)
 
@@ -27,7 +27,7 @@
 ### Prerequisites
 - .NET SDK 9.0+
 - Docker Desktop (optional, for local PostgreSQL + pgAdmin via Docker Compose)
-- OpenRouter API key (optional for future AI integration): set as `OPENROUTER_API_KEY`
+- OpenAi API key (optional for future AI integration): set as `OPENAI_API_KEY`
 
 ### Run the app (no Docker)
 ```bash
@@ -103,7 +103,7 @@ Planned milestones (high level):
 - Integrate ASP.NET Core Identity (registration, login, account deletion)
 - Add EF Core + PostgreSQL (schema, migrations, repositories)
 - Implement manual flashcard CRUD
-- Connect OpenRouter.ai and build the AI generation flow and review UI
+- Connect OpenAi and build the AI generation flow and review UI
 - Integrate spaced repetition session using a ready algorithm/library
 - Add acceptance metrics and basic analytics
 - CI/CD with GitHub Actions; containerized deploy

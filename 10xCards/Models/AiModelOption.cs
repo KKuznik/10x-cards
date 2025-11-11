@@ -34,7 +34,7 @@ public static class AiModelOptions
 	/// <summary>
 	/// Default/recommended AI model
 	/// </summary>
-	public const string DefaultModel = "openai/gpt-4o-mini";
+	public const string DefaultModel = "gpt-4o-mini";
 
 	/// <summary>
 	/// List of available AI models for flashcard generation
@@ -43,30 +43,16 @@ public static class AiModelOptions
 	{
 		new AiModelOption
 		{
-			Value = "openai/gpt-4o-mini",
+			Value = "gpt-4o-mini",
 			DisplayName = "GPT-4 Mini (zalecany)",
 			Description = "Szybki i ekonomiczny model OpenAI, idealny do generowania fiszek",
 			IsRecommended = true
 		},
 		new AiModelOption
 		{
-			Value = "openai/gpt-4o",
+			Value = "gpt-4o",
 			DisplayName = "GPT-4",
 			Description = "Zaawansowany model OpenAI z najlepszą jakością odpowiedzi",
-			IsRecommended = false
-		},
-		new AiModelOption
-		{
-			Value = "anthropic/claude-3-haiku",
-			DisplayName = "Claude 3 Haiku",
-			Description = "Szybki model Anthropic Claude",
-			IsRecommended = false
-		},
-		new AiModelOption
-		{
-			Value = "anthropic/claude-3-sonnet",
-			DisplayName = "Claude 3 Sonnet",
-			Description = "Zbalansowany model Anthropic Claude",
 			IsRecommended = false
 		}
 	};

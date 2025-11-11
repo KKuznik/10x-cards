@@ -153,7 +153,7 @@ Authorization: Bearer {{token}}
 
 ### Notes:
 # - Replace {{token}} with an actual JWT token obtained from the login endpoint
-# - The OpenRouter API key must be configured in appsettings.json or as an environment variable
+# - The OpenAi API key must be configured in appsettings.json or as an environment variable
 # - Test #3 (text too long) requires manually creating a string longer than 10000 characters
 # - Actual AI generation may take 3-10 seconds depending on the model and text length
 # - Error responses may vary based on the actual AI service errors encountered

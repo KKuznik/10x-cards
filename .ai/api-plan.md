@@ -370,7 +370,7 @@ The API is organized around the following main resources, corresponding to datab
 ```json
 {
   "sourceText": "Photosynthesis is the process by which plants and other organisms convert light energy into chemical energy... [1000-10000 characters]",
-  "model": "openai/gpt-4o-mini"
+  "model": "gpt-4o-mini"
 }
 ```
 
@@ -379,7 +379,7 @@ The API is organized around the following main resources, corresponding to datab
 {
   "id": 5,
   "userId": "550e8400-e29b-41d4-a716-446655440000",
-  "model": "openai/gpt-4o-mini",
+  "model": "gpt-4o-mini",
   "generatedCount": 8,
   "acceptedUneditedCount": null,
   "acceptedEditedCount": null,
@@ -423,7 +423,7 @@ The API is organized around the following main resources, corresponding to datab
 
 **Validation Rules:**
 - `sourceText`: Required, between 1000 and 10000 characters
-- `model`: Required, valid OpenRouter model identifier
+- `model`: Required, valid openai model identifier
 
 **Business Logic:**
 - Calculate SHA-256 hash of sourceText for deduplication tracking
@@ -451,7 +451,7 @@ The API is organized around the following main resources, corresponding to datab
   "data": [
     {
       "id": 5,
-      "model": "openai/gpt-4o-mini",
+      "model": "gpt-4o-mini",
       "generatedCount": 8,
       "acceptedUneditedCount": 5,
       "acceptedEditedCount": 2,
@@ -459,17 +459,6 @@ The API is organized around the following main resources, corresponding to datab
       "generationDuration": 3200,
       "createdAt": "2025-11-03T10:00:00Z",
       "acceptanceRate": 87.5
-    },
-    {
-      "id": 4,
-      "model": "anthropic/claude-3-haiku",
-      "generatedCount": 10,
-      "acceptedUneditedCount": 7,
-      "acceptedEditedCount": 1,
-      "sourceTextLength": 3200,
-      "generationDuration": 4100,
-      "createdAt": "2025-11-02T15:30:00Z",
-      "acceptanceRate": 80.0
     }
   ],
   "pagination": {
@@ -502,7 +491,7 @@ The API is organized around the following main resources, corresponding to datab
 {
   "id": 5,
   "userId": "550e8400-e29b-41d4-a716-446655440000",
-  "model": "openai/gpt-4o-mini",
+  "model": "gpt-4o-mini",
   "generatedCount": 8,
   "acceptedUneditedCount": 5,
   "acceptedEditedCount": 2,
@@ -604,7 +593,7 @@ All data access enforced at application layer:
 | Field | Rules |
 |-------|-------|
 | sourceText | Required, between 1000 and 10000 characters |
-| model | Required, valid OpenRouter model identifier |
+| model | Required, valid openai model identifier |
 | user_id | Required, automatically set from authenticated user |
 | source_text_length | Calculated from sourceText |
 | source_text_hash | Calculated SHA-256 hash of sourceText |
@@ -626,12 +615,12 @@ All data access enforced at application layer:
 1. **Generation Request:**
    ```
    User submits text -> Validate length (1000-10000) -> Calculate hash -> 
-   Call OpenRouter API -> Measure duration -> Parse response -> 
+   Call OpenAi API -> Measure duration -> Parse response -> 
    Store generation record -> Return proposed flashcards
    ```
 
 2. **Error Handling:**
-   - If OpenRouter API fails: Store error in `generation_error_logs` table
+   - If OpenAi API fails: Store error in `generation_error_logs` table
    - Return user-friendly error message
    - Log error code, message, and metadata for debugging
 
@@ -681,7 +670,7 @@ All data access enforced at application layer:
 - `403 Forbidden` - Authenticated but not authorized (rare in MVP due to simple auth model)
 - `404 Not Found` - Resource doesn't exist or doesn't belong to user
 - `500 Internal Server Error` - Unexpected server errors
-- `503 Service Unavailable` - External service (OpenRouter) temporarily unavailable
+- `503 Service Unavailable` - External service (OpenAi) temporarily unavailable
 
 **Logging:**
 - All errors logged with correlation ID for tracing
