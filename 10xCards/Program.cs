@@ -13,7 +13,8 @@ using System.Text;
 
 namespace _10xCards;
 
-public class Program
+// Made partial and public for WebApplicationFactory in E2E tests
+public partial class Program
 {
     public static void Main(string[] args)
     {

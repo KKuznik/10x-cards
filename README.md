@@ -9,6 +9,9 @@
 - [Tech stack](#tech-stack)
 - [Getting started locally](#getting-started-locally)
 - [Available scripts](#available-scripts)
+- [Testing](#testing)
+  - [Unit Tests](#unit-tests)
+  - [E2E Tests](#e2e-tests)
 - [Project scope](#project-scope)
 - [Project status](#project-status)
 - [License](#license)
@@ -74,6 +77,106 @@ Current configuration files:
 After EF Core is added:
 - **Migrations**: `dotnet ef migrations add <Name>`
 - **Update DB**: `dotnet ef database update`
+
+## Testing
+
+The project includes comprehensive test coverage with both unit tests and end-to-end (E2E) tests.
+
+### Unit Tests
+
+Unit tests are located in the `10xCards.Tests` project and test individual components, services, and utilities in isolation.
+
+**Running Unit Tests:**
+```bash
+# Run all unit tests
+dotnet test 10xCards.Tests/10xCards.Tests.csproj
+
+# Run with detailed output
+dotnet test 10xCards.Tests/10xCards.Tests.csproj --verbosity normal
+
+# Run with coverage
+dotnet test 10xCards.Tests/10xCards.Tests.csproj --collect:"XPlat Code Coverage"
+```
+
+**Unit Test Structure:**
+- `Services/` - Tests for business logic services
+- `Validators/` - Tests for request validation
+- `Utilities/` - Tests for helper utilities
+- `Fixtures/` - Shared test fixtures (in-memory database)
+
+### E2E Tests
+
+End-to-end tests are located in the `10xCards.E2ETests` project and test complete user flows through the browser using Playwright.
+
+**Architecture:**
+- **Browser Automation**: Playwright for .NET (Chromium)
+- **Database**: Testcontainers PostgreSQL (shared container across all tests)
+- **Application Host**: WebApplicationFactory for in-process testing
+- **Test Isolation**: Database transactions rolled back after each test
+
+**Prerequisites:**
+- Docker Desktop must be running (for PostgreSQL Testcontainers)
+- Playwright browsers will be installed automatically on first build
+
+**Running E2E Tests:**
+```bash
+# Build the test project (installs Playwright browsers)
+dotnet build 10xCards.E2ETests/10xCards.E2ETests.csproj
+
+# Run all E2E tests
+dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj
+
+# Run with detailed output
+dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj --verbosity normal
+
+# Run specific test class
+dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj --filter "FullyQualifiedName~AuthenticationE2ETests"
+
+# Run specific test
+dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj --filter "Name=Login_WithValidCredentials_ShouldSucceed"
+```
+
+**Manual Playwright Browser Installation** (if needed):
+```powershell
+# PowerShell
+pwsh 10xCards.E2ETests/bin/Debug/net9.0/playwright.ps1 install chromium
+```
+
+**E2E Test Features:**
+- ✅ Real browser testing (not just HTTP calls)
+- ✅ Single PostgreSQL container shared across all tests (fast startup)
+- ✅ Test isolation via database transactions
+- ✅ Authentication flow testing (register, login, logout)
+- ✅ Flashcard CRUD operations testing
+- ✅ API and UI interaction testing
+- ✅ Screenshot capture on test failure
+
+**E2E Test Structure:**
+- `Tests/AuthenticationE2ETests.cs` - User registration, login, logout flows
+- `Tests/FlashcardE2ETests.cs` - Flashcard CRUD operations
+- `Fixtures/` - Shared test infrastructure (database, browser, app factory)
+- `Helpers/` - Test utilities and page helpers
+- `Base/` - Base test class with common functionality
+
+**Debugging E2E Tests:**
+
+To run tests in headed mode (see the browser):
+1. Edit `10xCards.E2ETests/Fixtures/PlaywrightFixture.cs`
+2. Change `Headless = true` to `Headless = false`
+3. Run the tests
+
+**Performance:**
+- First test run: ~10-15 seconds (container startup + migrations)
+- Subsequent tests: ~1-2 seconds per test (shared container)
+- All tests reuse the same PostgreSQL container for optimal speed
+
+**CI/CD Integration:**
+
+E2E tests are CI/CD ready and work in GitHub Actions with Docker support:
+```yaml
+- name: Run E2E Tests
+  run: dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj
+```
 
 ## Project scope
 

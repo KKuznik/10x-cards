@@ -9,7 +9,7 @@ namespace _10xCards.Services;
 /// Custom authentication state provider that reads JWT token from browser localStorage
 /// and creates claims principal for Blazor authentication
 /// </summary>
-public sealed class ClientAuthenticationStateProvider : AuthenticationStateProvider {
+public class ClientAuthenticationStateProvider : AuthenticationStateProvider {
 	private readonly IJSRuntime _jsRuntime;
 	private readonly ILogger<ClientAuthenticationStateProvider> _logger;
 
@@ -53,8 +53,23 @@ public sealed class ClientAuthenticationStateProvider : AuthenticationStateProvi
 
 			return new AuthenticationState(user);
 		}
+		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
+			// Expected during server-side rendering (SSR) - JavaScript is not available yet
+			_logger.LogDebug("JavaScript interop not available (SSR): {Message}", ex.Message);
+			return CreateAnonymousState();
+		}
+		catch (JSException ex) {
+			// JavaScript error occurred (e.g., function not found)
+			_logger.LogWarning(ex, "JavaScript error getting authentication state");
+			return CreateAnonymousState();
+		}
+		catch (JSDisconnectedException ex) {
+			// JavaScript runtime disconnected (e.g., browser closed)
+			_logger.LogDebug(ex, "JavaScript runtime disconnected");
+			return CreateAnonymousState();
+		}
 		catch (Exception ex) {
-			_logger.LogError(ex, "Error getting authentication state");
+			_logger.LogError(ex, "Unexpected error getting authentication state");
 			return CreateAnonymousState();
 		}
 	}

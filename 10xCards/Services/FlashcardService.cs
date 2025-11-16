@@ -49,12 +49,13 @@ public sealed class FlashcardService : IFlashcardService {
 				baseQuery = baseQuery.Where(f => f.Source == query.Source);
 			}
 
-			// Optional search filter (case-insensitive search in front and back)
-			if (!string.IsNullOrEmpty(query.Search)) {
-				baseQuery = baseQuery.Where(f =>
-					EF.Functions.ILike(f.Front, $"%{query.Search}%") ||
-					EF.Functions.ILike(f.Back, $"%{query.Search}%"));
-			}
+		// Optional search filter (case-insensitive search in front and back)
+		if (!string.IsNullOrEmpty(query.Search)) {
+			var searchLower = query.Search.ToLower();
+			baseQuery = baseQuery.Where(f =>
+				f.Front.ToLower().Contains(searchLower) ||
+				f.Back.ToLower().Contains(searchLower));
+		}
 
 			// Get total count for pagination metadata
 			var totalItems = await baseQuery.CountAsync(cancellationToken);
@@ -254,13 +255,19 @@ public sealed class FlashcardService : IFlashcardService {
 				return Result<CreateFlashcardsBatchResponse>.Failure("Invalid user ID");
 			}
 
-			// Guard clause: validate request
-			if (request is null) {
-				_logger.LogWarning("CreateFlashcardsBatchAsync called with null request. UserId: {UserId}", userId);
-				return Result<CreateFlashcardsBatchResponse>.Failure("Request is required");
-			}
+		// Guard clause: validate request
+		if (request is null) {
+			_logger.LogWarning("CreateFlashcardsBatchAsync called with null request. UserId: {UserId}", userId);
+			return Result<CreateFlashcardsBatchResponse>.Failure("Request is required");
+		}
 
-			// Query generation with tracking (will be updated)
+		// Guard clause: validate flashcards list is not empty
+		if (request.Flashcards is null || request.Flashcards.Count == 0) {
+			_logger.LogWarning("CreateFlashcardsBatchAsync called with empty flashcards list. UserId: {UserId}", userId);
+			return Result<CreateFlashcardsBatchResponse>.Failure("At least one flashcard is required");
+		}
+
+		// Query generation with tracking (will be updated)
 			var generation = await _context.Generations
 				.Where(g => g.Id == request.GenerationId && g.UserId == userId)
 				.FirstOrDefaultAsync(cancellationToken);
@@ -378,17 +385,17 @@ public sealed class FlashcardService : IFlashcardService {
 			var trimmedFront = request.Front.Trim();
 			var trimmedBack = request.Back.Trim();
 
-			// Update flashcard properties
-			flashcard.Front = trimmedFront;
-			flashcard.Back = trimmedBack;
+		// Update flashcard properties
+		flashcard.Front = trimmedFront;
+		flashcard.Back = trimmedBack;
+		flashcard.UpdatedAt = DateTime.UtcNow;
 
-			// Apply source logic: if originally 'ai-full', change to 'ai-edited'
-			if (flashcard.Source == "ai-full") {
-				flashcard.Source = "ai-edited";
-			}
+		// Apply source logic: if originally 'ai-full', change to 'ai-edited'
+		if (flashcard.Source == "ai-full") {
+			flashcard.Source = "ai-edited";
+		}
 
-			// Note: UpdatedAt is automatically updated by database trigger
-			// GenerationId is preserved (no changes)
+		// GenerationId is preserved (no changes)
 
 			// Save changes
 			await _context.SaveChangesAsync(cancellationToken);

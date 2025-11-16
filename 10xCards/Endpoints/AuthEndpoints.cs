@@ -54,12 +54,14 @@ public static class AuthEndpoints {
 
 			var result = await authService.LoginUserAsync(request, cancellationToken);
 
-			if (!result.IsSuccess) {
-				return Results.Json(
-					new Models.Responses.ErrorResponse { Message = "Invalid email or password" },
-					statusCode: StatusCodes.Status401Unauthorized
-				);
-			}
+		if (!result.IsSuccess) {
+			return Results.Json(
+				new Models.Responses.ErrorResponse { 
+					Message = result.ErrorMessage ?? "Invalid email or password" 
+				},
+				statusCode: StatusCodes.Status401Unauthorized
+			);
+		}
 
 			return Results.Ok(result.Value);
 		})

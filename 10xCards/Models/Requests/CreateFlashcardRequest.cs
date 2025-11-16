@@ -17,5 +17,8 @@ public sealed class CreateFlashcardRequest {
 	[MaxLength(500, ErrorMessage = "Back must not exceed 500 characters")]
 	[MinLength(1, ErrorMessage = "Back cannot be empty")]
 	public string Back { get; set; } = string.Empty;
+
+	[MaxLength(500, ErrorMessage = "Source must not exceed 500 characters")]
+	public string Source { get; set; } = string.Empty;
 }
 
