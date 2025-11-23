@@ -113,23 +113,26 @@ public partial class Register : ComponentBase {
 			isSubmitting = true;
 			errorMessage = null;
 
-			// Guard clause: Additional server-side validation for defense in depth
-			if (string.IsNullOrWhiteSpace(registerModel.Email) || registerModel.Email.Length > 255) {
-				errorMessage = ERROR_INVALID_EMAIL;
-				return;
-			}
+		// Guard clause: Additional server-side validation for defense in depth
+		if (string.IsNullOrWhiteSpace(registerModel.Email) || registerModel.Email.Length > 255) {
+			errorMessage = ERROR_INVALID_EMAIL;
+			StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+			return;
+		}
 
-			if (string.IsNullOrWhiteSpace(registerModel.Password) || 
-			    registerModel.Password.Length < 8 || 
-			    registerModel.Password.Length > 100) {
-				errorMessage = ERROR_INVALID_PASSWORD_LENGTH;
-				return;
-			}
+		if (string.IsNullOrWhiteSpace(registerModel.Password) ||
+			registerModel.Password.Length < 8 ||
+			registerModel.Password.Length > 100) {
+			errorMessage = ERROR_INVALID_PASSWORD_LENGTH;
+			StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+			return;
+		}
 
-			if (registerModel.Password != registerModel.ConfirmPassword) {
-				errorMessage = ERROR_PASSWORD_MISMATCH;
-				return;
-			}
+		if (registerModel.Password != registerModel.ConfirmPassword) {
+			errorMessage = ERROR_PASSWORD_MISMATCH;
+			StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+			return;
+		}
 
 			// Map ViewModel to Request DTO
 			var request = new RegisterRequest {
@@ -141,41 +144,45 @@ public partial class Register : ComponentBase {
 			// Call authentication service with 30 second timeout
 			var result = await AuthService.RegisterUserAsync(request, CreateTimeoutToken(30));
 
-			// Handle error cases first (early return pattern)
-			if (!result.IsSuccess) {
-				errorMessage = ExtractErrorMessage(result.Errors);
-				// WCAG: Focus first field for better accessibility
-				await SetFocusToFirstFieldAsync();
-				return;
+		// Handle error cases first (early return pattern)
+		if (!result.IsSuccess) {
+			errorMessage = ExtractErrorMessage(result.Errors);
+			StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+			// WCAG: Focus first field for better accessibility
+			await SetFocusToFirstFieldAsync();
+			return;
+		}
+
+			// Happy path: successful registration
+			if (result.Value != null) {
+				// Save authentication state via client authentication service
+				await ClientAuthService.LoginAsync(result.Value.Token, result.Value.ExpiresAt, result.Value.Email);
+
+				// Navigate to home page
+				NavigationManager.NavigateTo("/", forceLoad: true);
 			}
+		}
+	catch (TaskCanceledException ex) {
+		// Handle timeout
+		Logger.LogWarning(ex, "Registration request timeout after 30 seconds");
+		errorMessage = "Żądanie przekroczyło limit czasu. Spróbuj ponownie.";
+		StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+	}
+	catch (HttpRequestException ex) {
+		// Handle network errors
+		Logger.LogWarning(ex, "Network error during registration attempt");
+		errorMessage = "Błąd połączenia z serwerem. Sprawdź połączenie internetowe.";
+		StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+	}
+	catch (Exception ex) {
+		// Log the exception without exposing user email for security/GDPR compliance
+		// SECURITY: Do not log sensitive user information in production
+		Logger.LogError(ex, "Unexpected error during registration attempt");
 
-		// Happy path: successful registration
-		if (result.Value != null) {
-			// Save authentication state via client authentication service
-			await ClientAuthService.LoginAsync(result.Value.Token, result.Value.ExpiresAt, result.Value.Email);
-
-			// Navigate to home page
-			NavigationManager.NavigateTo("/", forceLoad: true);
-		}
-		}
-		catch (TaskCanceledException ex) {
-			// Handle timeout
-			Logger.LogWarning(ex, "Registration request timeout after 30 seconds");
-			errorMessage = "Żądanie przekroczyło limit czasu. Spróbuj ponownie.";
-		}
-		catch (HttpRequestException ex) {
-			// Handle network errors
-			Logger.LogWarning(ex, "Network error during registration attempt");
-			errorMessage = "Błąd połączenia z serwerem. Sprawdź połączenie internetowe.";
-		}
-		catch (Exception ex) {
-			// Log the exception without exposing user email for security/GDPR compliance
-			// SECURITY: Do not log sensitive user information in production
-			Logger.LogError(ex, "Unexpected error during registration attempt");
-			
-			// Handle unexpected errors - generic message to prevent information disclosure
-			errorMessage = ERROR_GENERIC;
-		}
+		// Handle unexpected errors - generic message to prevent information disclosure
+		errorMessage = ERROR_GENERIC;
+		StateHasChanged(); // Force immediate re-render in InteractiveServer mode
+	}
 		finally {
 			isSubmitting = false;
 		}
@@ -192,7 +199,7 @@ public partial class Register : ComponentBase {
 
 		// Try to get first error message from the dictionary
 		var firstError = errors.FirstOrDefault();
-		
+
 		// Guard clause: check if value exists
 		if (firstError.Value == null || firstError.Value.Count == 0) {
 			return ERROR_REGISTRATION_FAILED;

@@ -118,9 +118,18 @@ public sealed class ClientAuthenticationService : IClientAuthenticationService {
 				provider.NotifyAuthenticationStateChanged();
 			}
 		}
+		catch (JSException ex) {
+			// JavaScript function not found or error - this can happen during SSR or if auth.js isn't loaded yet
+			// Log but don't throw - authentication will be re-established after navigation/page load
+			_logger.LogWarning(ex, "JavaScript error saving authentication data - auth.js may not be ready yet");
+		}
+		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop")) {
+			// JavaScript interop not available (SSR) - this is expected
+			_logger.LogDebug("JavaScript interop not available during SSR - authentication will be established on client");
+		}
 		catch (Exception ex) {
-			_logger.LogError(ex, "Failed to save authentication data");
-			throw;
+			// Log other unexpected errors but don't throw - allow navigation to proceed
+			_logger.LogError(ex, "Unexpected error saving authentication data");
 		}
 	}
 

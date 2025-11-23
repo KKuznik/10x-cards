@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Identity;
+using _10xCards.Database.Entities;
+using _10xCards.Database.Context;
+
 namespace _10xCards.E2ETests.Helpers;
 
 /// <summary>
@@ -58,6 +62,30 @@ public static class TestDataGenerator
             Email = GenerateUniqueEmail(),
             Password = GenerateInvalidPassword()
         };
+    }
+
+    /// <summary>
+    /// Seed a test user directly into the database (much faster than UI registration)
+    /// </summary>
+    public static async Task<TestUser> SeedTestUserAsync(ApplicationDbContext context, UserManager<User> userManager)
+    {
+        var testUser = GenerateTestUser();
+        
+        var user = new User
+        {
+            UserName = testUser.Email,
+            Email = testUser.Email,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(user, testUser.Password);
+        
+        if (!result.Succeeded)
+        {
+            throw new Exception($"Failed to seed test user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
+        return testUser;
     }
 }
 

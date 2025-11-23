@@ -1,3 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+using _10xCards.Database.Entities;
+
 namespace _10xCards.E2ETests.Tests;
 
 /// <summary>
@@ -5,47 +9,39 @@ namespace _10xCards.E2ETests.Tests;
 /// Tests login page, authentication, and post-login navigation
 /// </summary>
 [Collection("E2E Tests")]
-public class LoginTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
+public class LoginTests : IAsyncLifetime
 {
-    private readonly DatabaseFixture _databaseFixture;
-    private CustomWebApplicationFactory? _factory;
-    private PlaywrightFixture? _playwrightFixture;
+    private readonly E2ETestCollectionFixture _collectionFixture;
     private IBrowserContext? _browserContext;
     private IPage? _page;
-    private string _baseUrl = string.Empty;
 
-    public LoginTests(DatabaseFixture databaseFixture)
+    public LoginTests(E2ETestCollectionFixture collectionFixture)
     {
-        _databaseFixture = databaseFixture;
+        _collectionFixture = collectionFixture;
     }
 
     public async Task InitializeAsync()
     {
-        // Create web application factory with test database
-        _factory = new CustomWebApplicationFactory(_databaseFixture.ConnectionString);
-        _baseUrl = _factory.ServerAddress;
+        // Clean database before each test to ensure isolation
+        var scope = _collectionFixture.WebApplicationFactory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<_10xCards.Database.Context.ApplicationDbContext>();
+        await DatabaseCleaner.CleanDatabaseAsync(dbContext);
 
-        // Setup Playwright
-        _playwrightFixture = new PlaywrightFixture { BaseUrl = _baseUrl };
-        await _playwrightFixture.InitializeAsync();
-        
-        _browserContext = await _playwrightFixture.CreateContextAsync();
-        _page = await _playwrightFixture.CreatePageAsync(_browserContext);
+        // Create new browser context and page for test isolation
+        // This is lightweight and provides clean state (cookies, localStorage, etc.)
+        _browserContext = await _collectionFixture.PlaywrightFixture.CreateContextAsync();
+        _page = await _collectionFixture.PlaywrightFixture.CreatePageAsync(_browserContext);
     }
 
     public async Task DisposeAsync()
     {
+        // Only dispose per-test resources (context and page)
+        // Shared resources (database, server, browser) are kept alive
         if (_page != null)
             await _page.CloseAsync();
 
         if (_browserContext != null)
             await _browserContext.CloseAsync();
-
-        if (_playwrightFixture != null)
-            await _playwrightFixture.DisposeAsync();
-
-        if (_factory != null)
-            await _factory.DisposeAsync();
     }
 
     /// <summary>
@@ -57,7 +53,7 @@ public class LoginTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         {
             await _page!.WaitForFunctionAsync("() => window._authJsReady === true", new PageWaitForFunctionOptions 
             { 
-                Timeout = 10000 
+                Timeout = 3000  // Reduced from 10s to 3s for faster tests
             });
         }
         catch (TimeoutException)
@@ -68,38 +64,52 @@ public class LoginTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
     }
 
     /// <summary>
-    /// Helper method to register a test user
+    /// Helper method to seed a test user directly in the database (much faster than UI registration)
     /// </summary>
-    private async Task<TestUser> RegisterTestUserAsync()
+    private async Task<TestUser> SeedTestUserAsync()
     {
-        var testUser = TestDataGenerator.GenerateTestUser();
+        var scope = _collectionFixture.WebApplicationFactory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<_10xCards.Database.Context.ApplicationDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         
-        await _page!.GotoAsync("/register");
-        await WaitForAuthJsReadyAsync();
-        await _page.FillAsync("#email", testUser.Email);
-        await _page.FillAsync("#password", testUser.Password);
-        await _page.FillAsync("#confirmPassword", testUser.Password);
-        await _page.ClickAsync("button[type='submit']");
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        return testUser;
+        return await TestDataGenerator.SeedTestUserAsync(dbContext, userManager);
     }
 
     [Fact]
     public async Task Login_WithValidCredentials_ShouldSucceed()
     {
-        // Arrange - Register a user first
-        var testUser = await RegisterTestUserAsync();
+        // Arrange - Seed a test user directly in database (faster than UI registration)
+        var testUser = await SeedTestUserAsync();
+        
+        // Clear authentication state to ensure clean login test
+        await _page!.Context.ClearCookiesAsync();
 
         // Act - Login with the registered user
-        await _page!.GotoAsync("/login");
+        await _page.GotoAsync("/login");
         await WaitForAuthJsReadyAsync();
         await _page.FillAsync("#email", testUser.Email);
         await _page.FillAsync("#password", testUser.Password);
-        await _page.ClickAsync("button[type='submit']");
-
-        // Wait for navigation after login
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        
+        // Wait for submit button to be enabled
+        await _page.WaitForSelectorAsync("button[type='submit']:not([disabled])", new() { Timeout = 3000 });
+        
+        // Click submit and wait for navigation to complete
+        // Using RunAndWaitForNavigationAsync because Login uses forceLoad: true which triggers full page navigation
+        try
+        {
+            await _page.RunAndWaitForNavigationAsync(async () =>
+            {
+                await _page.ClickAsync("button[type='submit']");
+            }, new() { Timeout = 15000, WaitUntil = WaitUntilState.Load });  // Reduced timeout and changed to Load state
+        }
+        catch (TimeoutException)
+        {
+            // Navigation didn't happen - check for error message
+            var hasError = await _page.Locator(".alert-danger").IsVisibleAsync();
+            var errorText = hasError ? await _page.Locator(".alert-danger").TextContentAsync() : "No error";
+            Console.WriteLine($"Navigation timeout. Error visible: {hasError}, Text: {errorText}");
+            Assert.Fail($"Login did not navigate away from login page. Error: {errorText}");
+        }
 
         // Assert
         var currentUrl = _page.Url;
@@ -112,8 +122,8 @@ public class LoginTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
     [Fact]
     public async Task Login_WithInvalidPassword_ShouldShowError()
     {
-        // Arrange - Register a user first
-        var testUser = await RegisterTestUserAsync();
+        // Arrange - Seed a test user directly in database (faster than UI registration)
+        var testUser = await SeedTestUserAsync();
 
         // Act - Try to login with wrong password
         await _page!.GotoAsync("/login");
@@ -147,7 +157,7 @@ public class LoginTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         await _page.ClickAsync("button[type='submit']");
 
         // Wait for error message to appear
-        await _page.WaitForSelectorAsync(".alert-danger", new PageWaitForSelectorOptions { Timeout = 10000 });
+        await _page.WaitForSelectorAsync(".alert-danger", new PageWaitForSelectorOptions { Timeout = 5000 });
 
         // Assert
         var errorVisible = await _page.Locator(".alert-danger").IsVisibleAsync();
@@ -176,21 +186,45 @@ public class LoginTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
     [Fact]
     public async Task Login_AfterSuccessfulLogin_ShouldShowUserMenu()
     {
-        // Arrange - Register and login a user
-        var testUser = await RegisterTestUserAsync();
+        // Arrange - Seed a test user directly in database (faster than UI registration)
+        var testUser = await SeedTestUserAsync();
         
-        await _page!.GotoAsync("/login");
+        // Clear authentication state to ensure clean login test
+        await _page!.Context.ClearCookiesAsync();
+        
+        // Navigate to login page
+        await _page.GotoAsync("/login");
         await WaitForAuthJsReadyAsync();
         await _page.FillAsync("#email", testUser.Email);
         await _page.FillAsync("#password", testUser.Password);
-        await _page.ClickAsync("button[type='submit']");
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        
+        // Act - Ensure button is ready and click submit
+        // Wait for submit button to be enabled
+        await _page.WaitForSelectorAsync("button[type='submit']:not([disabled])", new() { Timeout = 3000 });
+        
+        // Click submit and wait for navigation to complete
+        // Using RunAndWaitForNavigationAsync because Login uses forceLoad: true which triggers full page navigation
+        try
+        {
+            await _page.RunAndWaitForNavigationAsync(async () =>
+            {
+                await _page.ClickAsync("button[type='submit']");
+            }, new() { Timeout = 15000, WaitUntil = WaitUntilState.Load });  // Reduced timeout and changed to Load state
+        }
+        catch (TimeoutException)
+        {
+            // Navigation didn't happen - check for error message
+            var hasError = await _page.Locator(".alert-danger").IsVisibleAsync();
+            var errorText = hasError ? await _page.Locator(".alert-danger").TextContentAsync() : "No error";
+            Console.WriteLine($"Navigation timeout. Error visible: {hasError}, Text: {errorText}");
+            Assert.Fail($"Login did not navigate away from login page. Error: {errorText}");
+        }
 
-        // Assert - Check that we're logged in by looking for user-specific elements
+        // Assert - Check that we're logged in and not on login page
         var currentUrl = _page.Url;
         Assert.False(
             currentUrl.Contains("/login"),
-            "Should not be on login page after successful authentication"
+            $"Should not be on login page after successful authentication. Current URL: {currentUrl}"
         );
     }
 }

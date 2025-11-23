@@ -17,12 +17,10 @@ public class PlaywrightFixture : IAsyncLifetime
     /// <summary>
     /// Initialize Playwright and launch browser
     /// Called once before tests
+    /// Note: Browser installation is now handled by E2ETestCollectionFixture
     /// </summary>
     public async Task InitializeAsync()
     {
-        // Install Playwright browsers if not already installed
-        Microsoft.Playwright.Program.Main(new[] { "install" });
-
         _playwright = await Playwright.CreateAsync();
         
         // Launch browser in headless mode for CI/CD compatibility

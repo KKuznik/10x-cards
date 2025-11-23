@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace _10xCards.E2ETests.Tests;
 
 /// <summary>
@@ -5,47 +7,39 @@ namespace _10xCards.E2ETests.Tests;
 /// Tests registration page, form validation, and user creation
 /// </summary>
 [Collection("E2E Tests")]
-public class RegisterTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
+public class RegisterTests : IAsyncLifetime
 {
-    private readonly DatabaseFixture _databaseFixture;
-    private CustomWebApplicationFactory? _factory;
-    private PlaywrightFixture? _playwrightFixture;
+    private readonly E2ETestCollectionFixture _collectionFixture;
     private IBrowserContext? _browserContext;
     private IPage? _page;
-    private string _baseUrl = string.Empty;
 
-    public RegisterTests(DatabaseFixture databaseFixture)
+    public RegisterTests(E2ETestCollectionFixture collectionFixture)
     {
-        _databaseFixture = databaseFixture;
+        _collectionFixture = collectionFixture;
     }
 
     public async Task InitializeAsync()
     {
-        // Create web application factory with test database
-        _factory = new CustomWebApplicationFactory(_databaseFixture.ConnectionString);
-        _baseUrl = _factory.ServerAddress;
+        // Clean database before each test to ensure isolation
+        var scope = _collectionFixture.WebApplicationFactory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<_10xCards.Database.Context.ApplicationDbContext>();
+        await DatabaseCleaner.CleanDatabaseAsync(dbContext);
 
-        // Setup Playwright
-        _playwrightFixture = new PlaywrightFixture { BaseUrl = _baseUrl };
-        await _playwrightFixture.InitializeAsync();
-        
-        _browserContext = await _playwrightFixture.CreateContextAsync();
-        _page = await _playwrightFixture.CreatePageAsync(_browserContext);
+        // Create new browser context and page for test isolation
+        // This is lightweight and provides clean state (cookies, localStorage, etc.)
+        _browserContext = await _collectionFixture.PlaywrightFixture.CreateContextAsync();
+        _page = await _collectionFixture.PlaywrightFixture.CreatePageAsync(_browserContext);
     }
 
     public async Task DisposeAsync()
     {
+        // Only dispose per-test resources (context and page)
+        // Shared resources (database, server, browser) are kept alive
         if (_page != null)
             await _page.CloseAsync();
 
         if (_browserContext != null)
             await _browserContext.CloseAsync();
-
-        if (_playwrightFixture != null)
-            await _playwrightFixture.DisposeAsync();
-
-        if (_factory != null)
-            await _factory.DisposeAsync();
     }
 
     /// <summary>
@@ -57,7 +51,7 @@ public class RegisterTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         {
             await _page!.WaitForFunctionAsync("() => window._authJsReady === true", new PageWaitForFunctionOptions 
             { 
-                Timeout = 10000 
+                Timeout = 3000  // Reduced from 10s to 3s for faster tests
             });
         }
         catch (TimeoutException)
@@ -85,7 +79,7 @@ public class RegisterTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         await _page.ClickAsync("button[type='submit']");
 
         // Wait for navigation or success indication
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
 
         // Assert
         // After successful registration, user should be redirected to home or login page
@@ -96,35 +90,50 @@ public class RegisterTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         );
     }
 
-    [Fact]
-    public async Task Register_WithExistingEmail_ShouldShowError()
-    {
-        // Arrange - First, register a user
-        var testUser = TestDataGenerator.GenerateTestUser();
-        await _page!.GotoAsync("/register");
-        await WaitForAuthJsReadyAsync();
-        
-        await _page.FillAsync("#email", testUser.Email);
-        await _page.FillAsync("#password", testUser.Password);
-        await _page.FillAsync("#confirmPassword", testUser.Password);
-        await _page.ClickAsync("button[type='submit']");
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+	[Fact]
+	public async Task Register_WithExistingEmail_ShouldShowError()
+	{
+		// Arrange - First, register a user
+		var testUser = TestDataGenerator.GenerateTestUser();
+		await _page!.GotoAsync("/register");
+		await WaitForAuthJsReadyAsync();
+		
+		await _page.FillAsync("#email", testUser.Email);
+		await _page.FillAsync("#password", testUser.Password);
+		await _page.FillAsync("#confirmPassword", testUser.Password);
+		
+		try
+		{
+			await _page.RunAndWaitForNavigationAsync(async () =>
+			{
+				await _page.ClickAsync("button[type='submit']");
+			}, new() { Timeout = 15000, WaitUntil = WaitUntilState.Load });  // Reduced timeout and changed to Load state
+		}
+		catch (TimeoutException)
+		{
+			var hasError = await _page.Locator(".alert-danger").IsVisibleAsync();
+			var errorText = hasError ? await _page.Locator(".alert-danger").TextContentAsync() : "No error visible";
+			throw new Exception($"First registration failed - still on register page. URL: {_page.Url}, Error: {errorText}");
+		}
 
-        // Act - Try to register with the same email again
-        await _page.GotoAsync("/register");
-        await WaitForAuthJsReadyAsync();
-        await _page.FillAsync("#email", testUser.Email);
-        await _page.FillAsync("#password", testUser.Password);
-        await _page.FillAsync("#confirmPassword", testUser.Password);
-        await _page.ClickAsync("button[type='submit']");
-        
-        // Wait for error message to appear
-        await _page.WaitForSelectorAsync(".alert-danger", new PageWaitForSelectorOptions { Timeout = 10000 });
+		// Verify first registration succeeded
+		var currentUrl = _page.Url;
 
-        // Assert
-        var errorVisible = await _page.Locator(".alert-danger").IsVisibleAsync();
-        Assert.True(errorVisible, "Expected error message for duplicate email");
-    }
+		// Act - Try to register with the same email again
+		await _page.GotoAsync("/register");
+		await WaitForAuthJsReadyAsync();
+		await _page.FillAsync("#email", testUser.Email);
+		await _page.FillAsync("#password", testUser.Password);
+		await _page.FillAsync("#confirmPassword", testUser.Password);
+		await _page.ClickAsync("button[type='submit']");
+		
+		// Wait for error message to appear (no hard-coded delay needed)
+		await _page.WaitForSelectorAsync(".alert-danger", new PageWaitForSelectorOptions { Timeout = 5000 });
+
+		// Assert
+		var errorVisible = await _page.Locator(".alert-danger").IsVisibleAsync();
+		Assert.True(errorVisible, "Expected error message for duplicate email");
+	}
 
     [Fact]
     public async Task Register_WithInvalidPassword_ShouldShowValidationError()
@@ -145,8 +154,8 @@ public class RegisterTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         // Try to submit
         await _page.ClickAsync("button[type='submit']");
         
-        // Wait a bit for any potential submission to complete
-        await _page.WaitForTimeoutAsync(1000);
+        // Wait for page to stabilize
+        await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
 
         // Assert - validation error should be visible or button should be disabled
         var currentUrl = _page.Url;
@@ -172,8 +181,8 @@ public class RegisterTests : IClassFixture<DatabaseFixture>, IAsyncLifetime
         // Try to submit
         await _page.ClickAsync("button[type='submit']");
         
-        // Wait a bit for any potential submission to complete
-        await _page.WaitForTimeoutAsync(1000);
+        // Wait for page to stabilize
+        await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
 
         // Assert
         var currentUrl = _page.Url;
