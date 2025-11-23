@@ -101,13 +101,11 @@ public class RegisterTests : IAsyncLifetime
 		await _page.FillAsync("#email", testUser.Email);
 		await _page.FillAsync("#password", testUser.Password);
 		await _page.FillAsync("#confirmPassword", testUser.Password);
+		await _page.ClickAsync("button[type='submit']");
 		
 		try
 		{
-			await _page.RunAndWaitForNavigationAsync(async () =>
-			{
-				await _page.ClickAsync("button[type='submit']");
-			}, new() { Timeout = 15000, WaitUntil = WaitUntilState.Load });  // Reduced timeout and changed to Load state
+			await _page.WaitForURLAsync(url => !url.Contains("/register"), new() { Timeout = 15000 });
 		}
 		catch (TimeoutException)
 		{

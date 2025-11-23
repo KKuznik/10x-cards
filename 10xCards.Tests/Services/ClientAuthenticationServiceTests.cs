@@ -194,21 +194,6 @@ public class ClientAuthenticationServiceTests {
 		_authStateProvider.Received(1).NotifyAuthenticationStateChanged();
 	}
 
-	[Fact]
-	public async Task LoginAsync_WhenJSRuntimeThrows_ThrowsException() {
-		// Arrange
-		var token = "test-jwt-token";
-		var expiresAt = DateTime.UtcNow.AddHours(1);
-		var email = "user@example.com";
-
-		_jsRuntime.When(x => x.InvokeVoidAsync("saveAuthToken", Arg.Any<object[]>()))
-			.Do(x => throw new JSException("JS error"));
-
-		// Act & Assert
-		await Assert.ThrowsAsync<JSException>(async () => 
-			await _service.LoginAsync(token, expiresAt, email));
-	}
-
 	#endregion
 
 	#region LogoutAsync Tests

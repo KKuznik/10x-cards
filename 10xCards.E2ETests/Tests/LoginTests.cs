@@ -94,13 +94,12 @@ public class LoginTests : IAsyncLifetime
         await _page.WaitForSelectorAsync("button[type='submit']:not([disabled])", new() { Timeout = 3000 });
         
         // Click submit and wait for navigation to complete
-        // Using RunAndWaitForNavigationAsync because Login uses forceLoad: true which triggers full page navigation
+        // Login uses forceLoad: true which triggers full page navigation
+        await _page.ClickAsync("button[type='submit']");
+        
         try
         {
-            await _page.RunAndWaitForNavigationAsync(async () =>
-            {
-                await _page.ClickAsync("button[type='submit']");
-            }, new() { Timeout = 15000, WaitUntil = WaitUntilState.Load });  // Reduced timeout and changed to Load state
+            await _page.WaitForURLAsync(url => !url.Contains("/login"), new() { Timeout = 15000 });
         }
         catch (TimeoutException)
         {
@@ -203,13 +202,12 @@ public class LoginTests : IAsyncLifetime
         await _page.WaitForSelectorAsync("button[type='submit']:not([disabled])", new() { Timeout = 3000 });
         
         // Click submit and wait for navigation to complete
-        // Using RunAndWaitForNavigationAsync because Login uses forceLoad: true which triggers full page navigation
+        // Login uses forceLoad: true which triggers full page navigation
+        await _page.ClickAsync("button[type='submit']");
+        
         try
         {
-            await _page.RunAndWaitForNavigationAsync(async () =>
-            {
-                await _page.ClickAsync("button[type='submit']");
-            }, new() { Timeout = 15000, WaitUntil = WaitUntilState.Load });  // Reduced timeout and changed to Load state
+            await _page.WaitForURLAsync(url => !url.Contains("/login"), new() { Timeout = 15000 });
         }
         catch (TimeoutException)
         {
