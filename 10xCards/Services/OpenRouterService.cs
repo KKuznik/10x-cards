@@ -39,7 +39,7 @@ public sealed class OpenRouterService : IOpenRouterService {
 		}
 
 		// Get API key from configuration
-		var apiKey = _configuration["OpenRouter:ApiKey"] 
+		var apiKey = _configuration["OpenRouter:ApiKey"]
 			?? Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
 
 		if (string.IsNullOrWhiteSpace(apiKey)) {
@@ -153,16 +153,13 @@ REQUIRED JSON FORMAT:
 				model);
 
 			return flashcardsResponse.Flashcards;
-		}
-		catch (TaskCanceledException ex) {
+		} catch (TaskCanceledException ex) {
 			_logger.LogError(ex, "OpenRouter API request timed out for model {Model}", model);
 			throw new HttpRequestException("OpenRouter API request timed out", ex);
-		}
-		catch (HttpRequestException ex) {
+		} catch (HttpRequestException ex) {
 			_logger.LogError(ex, "HTTP error while calling OpenRouter API with model {Model}", model);
 			throw;
-		}
-		catch (JsonException ex) {
+		} catch (JsonException ex) {
 			_logger.LogError(ex, "Failed to parse OpenRouter API response for model {Model}", model);
 			throw new InvalidOperationException("Failed to parse AI response", ex);
 		}

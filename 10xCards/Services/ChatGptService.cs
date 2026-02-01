@@ -39,7 +39,7 @@ public sealed class ChatGptService : IChatGptService {
 		}
 
 		// Get API key from configuration
-		var apiKey = _configuration["OpenAI:ApiKey"] 
+		var apiKey = _configuration["OpenAI:ApiKey"]
 			?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
 		if (string.IsNullOrWhiteSpace(apiKey)) {
@@ -151,16 +151,13 @@ REQUIRED JSON FORMAT:
 				model);
 
 			return flashcardsResponse.Flashcards;
-		}
-		catch (TaskCanceledException ex) {
+		} catch (TaskCanceledException ex) {
 			_logger.LogError(ex, "OpenAI API request timed out for model {Model}", model);
 			throw new HttpRequestException("OpenAI API request timed out", ex);
-		}
-		catch (HttpRequestException ex) {
+		} catch (HttpRequestException ex) {
 			_logger.LogError(ex, "HTTP error while calling OpenAI API with model {Model}", model);
 			throw;
-		}
-		catch (JsonException ex) {
+		} catch (JsonException ex) {
 			_logger.LogError(ex, "Failed to parse OpenAI API response for model {Model}", model);
 			throw new InvalidOperationException("Failed to parse AI response", ex);
 		}

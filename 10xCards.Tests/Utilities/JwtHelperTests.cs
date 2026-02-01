@@ -8,7 +8,7 @@ using System.Text;
 namespace _10xCards.Tests.Utilities;
 
 public class JwtHelperTests {
-	
+
 	/// <summary>
 	/// Helper method to generate a valid JWT token for testing
 	/// </summary>

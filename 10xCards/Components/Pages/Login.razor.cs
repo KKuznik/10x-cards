@@ -91,8 +91,7 @@ public partial class Login : ComponentBase {
 	private async Task SetFocusToFirstFieldAsync() {
 		try {
 			await JSRuntime.InvokeVoidAsync("setFocusById", "email");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			Logger.LogWarning(ex, "Failed to set focus to first field");
 		}
 	}
@@ -138,34 +137,30 @@ public partial class Login : ComponentBase {
 				return;
 			}
 
-		// Happy path: successful login
-		if (result.Value != null) {
-			// Save authentication state via client authentication service
-			await ClientAuthService.LoginAsync(result.Value.Token, result.Value.ExpiresAt, result.Value.Email);
+			// Happy path: successful login
+			if (result.Value != null) {
+				// Save authentication state via client authentication service
+				await ClientAuthService.LoginAsync(result.Value.Token, result.Value.ExpiresAt, result.Value.Email);
 
-			// Navigate to home page
-			NavigationManager.NavigateTo("/", forceLoad: true);
-		}
-		}
-		catch (TaskCanceledException ex) {
+				// Navigate to home page
+				NavigationManager.NavigateTo("/", forceLoad: true);
+			}
+		} catch (TaskCanceledException ex) {
 			// Handle timeout
 			Logger.LogWarning(ex, "Login request timeout after 30 seconds");
 			errorMessage = "Żądanie przekroczyło limit czasu. Spróbuj ponownie.";
-		}
-		catch (HttpRequestException ex) {
+		} catch (HttpRequestException ex) {
 			// Handle network errors
 			Logger.LogWarning(ex, "Network error during login attempt");
 			errorMessage = "Błąd połączenia z serwerem. Sprawdź połączenie internetowe.";
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// Log the exception without exposing user email for security
 			// SECURITY: Do not log sensitive user information in production
 			Logger.LogError(ex, "Unexpected error during login attempt");
-			
+
 			// Handle unexpected errors - generic message to prevent information disclosure
 			errorMessage = ERROR_GENERIC;
-		}
-		finally {
+		} finally {
 			isSubmitting = false;
 		}
 	}

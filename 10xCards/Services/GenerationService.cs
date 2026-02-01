@@ -94,8 +94,7 @@ public sealed class GenerationService : IGenerationService {
 					TotalAccepted = 0,
 					OverallAcceptanceRate = 0.0
 				};
-			}
-			else {
+			} else {
 				// Calculate overall acceptance rate with division by zero protection
 				stats.OverallAcceptanceRate = stats.TotalGenerated > 0
 					? stats.TotalAccepted / (double)stats.TotalGenerated * 100
@@ -122,8 +121,7 @@ public sealed class GenerationService : IGenerationService {
 				data.Count, userId, query.Page, pagination.TotalPages);
 
 			return Result<GenerationsListResponse>.Success(response);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Error retrieving generations for user {UserId} with query {@Query}",
 				userId, query);
@@ -198,8 +196,7 @@ public sealed class GenerationService : IGenerationService {
 				generationId, response.Flashcards.Count, userId);
 
 			return Result<GenerationDetailResponse>.Success(response);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Error retrieving generation {GenerationId} for user {UserId}",
 				generationId, userId);
@@ -243,8 +240,7 @@ public sealed class GenerationService : IGenerationService {
 				_logger.LogWarning("AI service returned no flashcards for user {UserId}", userId);
 				return Result<GenerationResponse>.Failure("AI service did not generate any flashcards");
 			}
-		}
-		catch (HttpRequestException ex) {
+		} catch (HttpRequestException ex) {
 			stopwatch.Stop();
 			_logger.LogError(ex,
 				"HTTP error during AI generation for user {UserId}, model {Model}",
@@ -266,8 +262,7 @@ public sealed class GenerationService : IGenerationService {
 			}
 
 			return Result<GenerationResponse>.Failure("Failed to generate flashcards. Please try again later.");
-		}
-		catch (InvalidOperationException ex) {
+		} catch (InvalidOperationException ex) {
 			stopwatch.Stop();
 			_logger.LogError(ex,
 				"Invalid operation during AI generation for user {UserId}, model {Model}",
@@ -284,8 +279,7 @@ public sealed class GenerationService : IGenerationService {
 				cancellationToken);
 
 			return Result<GenerationResponse>.Failure("Failed to parse AI response. Please try again.");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			stopwatch.Stop();
 			_logger.LogError(ex,
 				"Unexpected error during AI generation for user {UserId}, model {Model}",
@@ -348,8 +342,7 @@ public sealed class GenerationService : IGenerationService {
 			};
 
 			return Result<GenerationResponse>.Success(response);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Database error while saving generation for user {UserId}",
 				userId);
@@ -397,8 +390,7 @@ public sealed class GenerationService : IGenerationService {
 			_logger.LogInformation(
 				"Logged generation error {ErrorCode} for user {UserId}",
 				errorCode, userId);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// Don't throw - error logging failure shouldn't prevent response
 			_logger.LogError(ex,
 				"Failed to log generation error to database for user {UserId}",

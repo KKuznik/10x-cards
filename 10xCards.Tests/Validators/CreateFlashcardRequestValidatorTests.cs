@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace _10xCards.Tests.Validators;
 
 public class CreateFlashcardRequestValidatorTests {
-	
+
 	private IList<ValidationResult> ValidateModel(object model) {
 		var validationResults = new List<ValidationResult>();
 		var ctx = new ValidationContext(model, null, null);

@@ -358,7 +358,7 @@ public class AuthServiceTests {
 		// Assert
 		result.IsSuccess.Should().BeTrue();
 		result.Value!.Token.Should().NotBeNullOrEmpty();
-		
+
 		// JWT token should have 3 parts separated by dots
 		var tokenParts = result.Value.Token.Split('.');
 		tokenParts.Should().HaveCount(3);
@@ -387,7 +387,7 @@ public class AuthServiceTests {
 		// Assert
 		result.IsSuccess.Should().BeTrue();
 		result.Value!.Token.Should().NotBeNullOrEmpty();
-		
+
 		// JWT token should have 3 parts separated by dots
 		var tokenParts = result.Value.Token.Split('.');
 		tokenParts.Should().HaveCount(3);

@@ -19,7 +19,7 @@ public class ClientAuthenticationServiceTests {
 		var authProviderLogger = Substitute.For<ILogger<ClientAuthenticationStateProvider>>();
 		_authStateProvider = Substitute.ForPartsOf<ClientAuthenticationStateProvider>(authProviderJsRuntime, authProviderLogger);
 		_logger = Substitute.For<ILogger<ClientAuthenticationService>>();
-		
+
 		_service = new ClientAuthenticationService(_jsRuntime, _authStateProvider, _logger);
 	}
 
@@ -170,13 +170,13 @@ public class ClientAuthenticationServiceTests {
 		await _service.LoginAsync(token, expiresAt, email);
 
 		// Assert
-		await _jsRuntime.Received(1).InvokeVoidAsync("saveAuthToken", 
-			Arg.Is<object[]>(args => 
-				args.Length == 2 && 
+		await _jsRuntime.Received(1).InvokeVoidAsync("saveAuthToken",
+			Arg.Is<object[]>(args =>
+				args.Length == 2 &&
 				args[0].ToString() == token));
-		await _jsRuntime.Received(1).InvokeVoidAsync("saveUsername", 
-			Arg.Is<object[]>(args => 
-				args.Length == 1 && 
+		await _jsRuntime.Received(1).InvokeVoidAsync("saveUsername",
+			Arg.Is<object[]>(args =>
+				args.Length == 1 &&
 				args[0].ToString() == email));
 	}
 
@@ -229,7 +229,7 @@ public class ClientAuthenticationServiceTests {
 			.Do(x => throw new JSException("JS error"));
 
 		// Act & Assert
-		await Assert.ThrowsAsync<JSException>(async () => 
+		await Assert.ThrowsAsync<JSException>(async () =>
 			await _service.LogoutAsync());
 	}
 

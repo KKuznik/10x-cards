@@ -73,16 +73,14 @@ public partial class NavMenu : ComponentBase, IDisposable {
 			// Get authentication state from provider
 			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 			var user = authState.User;
-			
+
 			// Check if user is authenticated
 			isAuthenticated = user.Identity?.IsAuthenticated ?? false;
-		}
-		catch (InvalidOperationException ex) {
+		} catch (InvalidOperationException ex) {
 			// Authentication provider not properly configured
 			Logger.LogWarning(ex, "Authentication provider not properly configured in NavMenu");
 			isAuthenticated = false;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// If authentication check fails, assume not authenticated
 			Logger.LogError(ex, "Unexpected error checking authentication state in NavMenu");
 			isAuthenticated = false;

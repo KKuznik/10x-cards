@@ -21,7 +21,7 @@ public static class JwtHelper {
 		try {
 			// Parse JWT token without validation (validation happens at API level)
 			var handler = new JwtSecurityTokenHandler();
-			
+
 			// Check if token is valid JWT format
 			if (!handler.CanReadToken(token)) {
 				return Guid.Empty;
@@ -30,7 +30,7 @@ public static class JwtHelper {
 			var jwtToken = handler.ReadJwtToken(token);
 
 			// Try to get NameIdentifier claim (ClaimTypes.NameIdentifier)
-			var userIdClaim = jwtToken.Claims.FirstOrDefault(c => 
+			var userIdClaim = jwtToken.Claims.FirstOrDefault(c =>
 				c.Type == ClaimTypes.NameIdentifier || c.Type == "sub");
 
 			// Early return: no claim found
@@ -44,8 +44,7 @@ public static class JwtHelper {
 			}
 
 			return Guid.Empty;
-		}
-		catch {
+		} catch {
 			// If any error occurs during parsing, return empty Guid
 			return Guid.Empty;
 		}

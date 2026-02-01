@@ -49,22 +49,19 @@ public partial class UserMenu : ComponentBase, IDisposable {
 		try {
 			// Check if user is authenticated
 			isAuthenticated = await AuthService.IsAuthenticatedAsync();
-			
+
 			// Get username if authenticated
 			if (isAuthenticated) {
 				username = await AuthService.GetUsernameAsync();
-			}
-			else {
+			} else {
 				username = null;
 			}
-		}
-		catch (InvalidOperationException ex) {
+		} catch (InvalidOperationException ex) {
 			// Authentication service not properly configured
 			Logger.LogWarning(ex, "Authentication service not properly configured in UserMenu");
 			isAuthenticated = false;
 			username = null;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// If authentication check fails, assume not authenticated
 			Logger.LogError(ex, "Unexpected error checking authentication state in UserMenu");
 			isAuthenticated = false;
@@ -82,8 +79,7 @@ public partial class UserMenu : ComponentBase, IDisposable {
 
 			// Navigate to login page with force reload
 			NavigationManager.NavigateTo("/login", forceLoad: true);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// Log the error and navigate to login
 			Logger.LogError(ex, "Error during logout in UserMenu");
 			NavigationManager.NavigateTo("/login", forceLoad: true);

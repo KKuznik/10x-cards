@@ -26,23 +26,19 @@ public sealed class ClientAuthenticationService : IClientAuthenticationService {
 	public async Task<bool> IsAuthenticatedAsync() {
 		try {
 			return await _jsRuntime.InvokeAsync<bool>("isAuthenticated");
-		}
-		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
+		} catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
 			// Expected during server-side rendering (SSR) - JavaScript is not available yet
 			_logger.LogDebug("JavaScript interop not available (SSR): {Message}", ex.Message);
 			return false;
-		}
-		catch (JSException ex) {
+		} catch (JSException ex) {
 			// JavaScript error occurred (e.g., function not found)
 			_logger.LogWarning(ex, "JavaScript error checking authentication status");
 			return false;
-		}
-		catch (JSDisconnectedException ex) {
+		} catch (JSDisconnectedException ex) {
 			// JavaScript runtime disconnected (e.g., browser closed)
 			_logger.LogDebug(ex, "JavaScript runtime disconnected");
 			return false;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex, "Unexpected error checking authentication status");
 			return false;
 		}
@@ -54,23 +50,19 @@ public sealed class ClientAuthenticationService : IClientAuthenticationService {
 	public async Task<string?> GetUsernameAsync() {
 		try {
 			return await _jsRuntime.InvokeAsync<string?>("getUsername");
-		}
-		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
+		} catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
 			// Expected during server-side rendering (SSR) - JavaScript is not available yet
 			_logger.LogDebug("JavaScript interop not available (SSR): {Message}", ex.Message);
 			return null;
-		}
-		catch (JSException ex) {
+		} catch (JSException ex) {
 			// JavaScript error occurred (e.g., function not found)
 			_logger.LogWarning(ex, "JavaScript error getting username");
 			return null;
-		}
-		catch (JSDisconnectedException ex) {
+		} catch (JSDisconnectedException ex) {
 			// JavaScript runtime disconnected (e.g., browser closed)
 			_logger.LogDebug(ex, "JavaScript runtime disconnected");
 			return null;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex, "Unexpected error getting username");
 			return null;
 		}
@@ -82,23 +74,19 @@ public sealed class ClientAuthenticationService : IClientAuthenticationService {
 	public async Task<string?> GetAuthTokenAsync() {
 		try {
 			return await _jsRuntime.InvokeAsync<string?>("getAuthToken");
-		}
-		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
+		} catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
 			// Expected during server-side rendering (SSR) - JavaScript is not available yet
 			_logger.LogDebug("JavaScript interop not available (SSR): {Message}", ex.Message);
 			return null;
-		}
-		catch (JSException ex) {
+		} catch (JSException ex) {
 			// JavaScript error occurred (e.g., function not found)
 			_logger.LogWarning(ex, "JavaScript error getting auth token");
 			return null;
-		}
-		catch (JSDisconnectedException ex) {
+		} catch (JSDisconnectedException ex) {
 			// JavaScript runtime disconnected (e.g., browser closed)
 			_logger.LogDebug(ex, "JavaScript runtime disconnected");
 			return null;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex, "Unexpected error getting auth token");
 			return null;
 		}
@@ -117,17 +105,14 @@ public sealed class ClientAuthenticationService : IClientAuthenticationService {
 			if (_authenticationStateProvider is ClientAuthenticationStateProvider provider) {
 				provider.NotifyAuthenticationStateChanged();
 			}
-		}
-		catch (JSException ex) {
+		} catch (JSException ex) {
 			// JavaScript function not found or error - this can happen during SSR or if auth.js isn't loaded yet
 			// Log but don't throw - authentication will be re-established after navigation/page load
 			_logger.LogWarning(ex, "JavaScript error saving authentication data - auth.js may not be ready yet");
-		}
-		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop")) {
+		} catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop")) {
 			// JavaScript interop not available (SSR) - this is expected
 			_logger.LogDebug("JavaScript interop not available during SSR - authentication will be established on client");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// Log other unexpected errors but don't throw - allow navigation to proceed
 			_logger.LogError(ex, "Unexpected error saving authentication data");
 		}
@@ -145,8 +130,7 @@ public sealed class ClientAuthenticationService : IClientAuthenticationService {
 			if (_authenticationStateProvider is ClientAuthenticationStateProvider provider) {
 				provider.NotifyAuthenticationStateChanged();
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex, "Failed to clear authentication data");
 			throw;
 		}

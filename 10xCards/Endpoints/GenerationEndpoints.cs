@@ -25,20 +25,20 @@ public static class GenerationEndpoints {
 			ClaimsPrincipal user,
 			CancellationToken cancellationToken) => {
 
-			// Extract userId from JWT claims
-			var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-			if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId)) {
-				return Results.Unauthorized();
-			}
+				// Extract userId from JWT claims
+				var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+				if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId)) {
+					return Results.Unauthorized();
+				}
 
-			var result = await generationService.ListGenerationsAsync(userId, query, cancellationToken);
+				var result = await generationService.ListGenerationsAsync(userId, query, cancellationToken);
 
-			if (!result.IsSuccess) {
-				return Results.BadRequest(new { message = result.ErrorMessage });
-			}
+				if (!result.IsSuccess) {
+					return Results.BadRequest(new { message = result.ErrorMessage });
+				}
 
-			return Results.Ok(result.Value);
-		})
+				return Results.Ok(result.Value);
+			})
 		.WithName("ListGenerations")
 		.WithSummary("Get paginated list of user's generations")
 		.WithDescription("Retrieves generation history with statistics and acceptance rates")
@@ -53,24 +53,24 @@ public static class GenerationEndpoints {
 			ClaimsPrincipal user,
 			CancellationToken cancellationToken) => {
 
-			// Extract userId from JWT claims
-			var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-			if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId)) {
-				return Results.Unauthorized();
-			}
+				// Extract userId from JWT claims
+				var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+				if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId)) {
+					return Results.Unauthorized();
+				}
 
-			var result = await generationService.GenerateFlashcardsAsync(
-				userId, request, cancellationToken);
+				var result = await generationService.GenerateFlashcardsAsync(
+					userId, request, cancellationToken);
 
-			if (!result.IsSuccess) {
-				return Results.Problem(
-					detail: result.ErrorMessage,
-					statusCode: StatusCodes.Status500InternalServerError);
-			}
+				if (!result.IsSuccess) {
+					return Results.Problem(
+						detail: result.ErrorMessage,
+						statusCode: StatusCodes.Status500InternalServerError);
+				}
 
-			// Return 201 Created with location header
-			return Results.Created($"/api/generations/{result.Value!.Id}", result.Value);
-		})
+				// Return 201 Created with location header
+				return Results.Created($"/api/generations/{result.Value!.Id}", result.Value);
+			})
 		.WithName("GenerateFlashcards")
 		.WithSummary("Generate flashcard suggestions using AI")
 		.WithDescription("Generates flashcard suggestions from source text using OpenAi AI models")
@@ -86,21 +86,21 @@ public static class GenerationEndpoints {
 			ClaimsPrincipal user,
 			CancellationToken cancellationToken) => {
 
-			// Extract userId from JWT claims
-			var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-			if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId)) {
-				return Results.Unauthorized();
-			}
+				// Extract userId from JWT claims
+				var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+				if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId)) {
+					return Results.Unauthorized();
+				}
 
-			var result = await generationService.GetGenerationDetailsAsync(
-				userId, id, cancellationToken);
+				var result = await generationService.GetGenerationDetailsAsync(
+					userId, id, cancellationToken);
 
-			if (!result.IsSuccess) {
-				return Results.NotFound(new { message = result.ErrorMessage });
-			}
+				if (!result.IsSuccess) {
+					return Results.NotFound(new { message = result.ErrorMessage });
+				}
 
-			return Results.Ok(result.Value);
-		})
+				return Results.Ok(result.Value);
+			})
 		.WithName("GetGenerationDetails")
 		.WithSummary("Get detailed information about a specific generation")
 		.WithDescription("Retrieves generation details with all associated flashcards")

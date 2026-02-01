@@ -52,23 +52,19 @@ public class ClientAuthenticationStateProvider : AuthenticationStateProvider {
 			var user = new ClaimsPrincipal(identity);
 
 			return new AuthenticationState(user);
-		}
-		catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
+		} catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued")) {
 			// Expected during server-side rendering (SSR) - JavaScript is not available yet
 			_logger.LogDebug("JavaScript interop not available (SSR): {Message}", ex.Message);
 			return CreateAnonymousState();
-		}
-		catch (JSException ex) {
+		} catch (JSException ex) {
 			// JavaScript error occurred (e.g., function not found)
 			_logger.LogWarning(ex, "JavaScript error getting authentication state");
 			return CreateAnonymousState();
-		}
-		catch (JSDisconnectedException ex) {
+		} catch (JSDisconnectedException ex) {
 			// JavaScript runtime disconnected (e.g., browser closed)
 			_logger.LogDebug(ex, "JavaScript runtime disconnected");
 			return CreateAnonymousState();
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex, "Unexpected error getting authentication state");
 			return CreateAnonymousState();
 		}
@@ -106,8 +102,7 @@ public class ClientAuthenticationStateProvider : AuthenticationStateProvider {
 			_logger.LogDebug("Parsed {ClaimCount} claims from JWT token", claims.Count);
 
 			return claims;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex, "Error parsing JWT token");
 			return null;
 		}

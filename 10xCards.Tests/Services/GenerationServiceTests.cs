@@ -328,12 +328,12 @@ public class GenerationServiceTests : IClassFixture<DatabaseFixture> {
 		// Act
 		var result = await _generationService.GenerateFlashcardsAsync(_testUserId, request);
 
-	// Assert
-	result.IsSuccess.Should().BeTrue();
-	result.Value.Should().NotBeNull();
-	result.Value!.Id.Should().BeGreaterThan(0);
-	result.Value.Flashcards.Should().HaveCount(3);
-	result.Value.GenerationDuration.Should().BeGreaterThanOrEqualTo(0);
+		// Assert
+		result.IsSuccess.Should().BeTrue();
+		result.Value.Should().NotBeNull();
+		result.Value!.Id.Should().BeGreaterThan(0);
+		result.Value.Flashcards.Should().HaveCount(3);
+		result.Value.GenerationDuration.Should().BeGreaterThanOrEqualTo(0);
 
 		// Verify generation was saved to database
 		var generation = await _fixture.Context.Generations.FindAsync(result.Value.Id);
@@ -471,7 +471,7 @@ public class GenerationServiceTests : IClassFixture<DatabaseFixture> {
 
 		// Assert
 		result.IsSuccess.Should().BeTrue();
-		
+
 		var generation = await _fixture.Context.Generations.FindAsync(result.Value!.Id);
 		generation!.SourceTextHash.Should().NotBeNullOrEmpty();
 		generation.SourceTextHash.Length.Should().Be(64); // SHA-256 produces 64 hex characters

@@ -14,14 +14,12 @@ using System.Text;
 namespace _10xCards;
 
 // Made partial and public for WebApplicationFactory in E2E tests
-public partial class Program
-{
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+public partial class Program {
+	public static void Main(string[] args) {
+		var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddRazorComponents()
-            .AddInteractiveServerComponents();
+		builder.Services.AddRazorComponents()
+			.AddInteractiveServerComponents();
 
 		// Configure HttpClient for Blazor components to call own API
 		builder.Services.AddScoped(sp => {
@@ -35,8 +33,7 @@ public partial class Program
 				.UseSnakeCaseNamingConvention());
 
 		// Configure ASP.NET Core Identity
-		builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
-		{
+		builder.Services.AddIdentity<User, IdentityRole<Guid>>(options => {
 			// Password settings
 			options.Password.RequireDigit = true;
 			options.Password.RequireLowercase = true;
@@ -59,15 +56,12 @@ public partial class Program
 		var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
 		var key = Encoding.UTF8.GetBytes(secretKey);
 
-		builder.Services.AddAuthentication(options =>
-		{
+		builder.Services.AddAuthentication(options => {
 			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 		})
-		.AddJwtBearer(options =>
-		{
-			options.TokenValidationParameters = new TokenValidationParameters
-			{
+		.AddJwtBearer(options => {
+			options.TokenValidationParameters = new TokenValidationParameters {
 				ValidateIssuer = true,
 				ValidateAudience = true,
 				ValidateLifetime = true,
@@ -81,59 +75,58 @@ public partial class Program
 
 		builder.Services.AddAuthorization();
 
-	// Register services
-	builder.Services.AddScoped<_10xCards.Services.IAuthService, _10xCards.Services.AuthService>();
-	builder.Services.AddScoped<_10xCards.Services.IFlashcardService, _10xCards.Services.FlashcardService>();
-	builder.Services.AddScoped<_10xCards.Services.IGenerationService, _10xCards.Services.GenerationService>();
-	
-	// Register client-side authentication services
-	builder.Services.AddScoped<_10xCards.Services.IClientAuthenticationService, _10xCards.Services.ClientAuthenticationService>();
-	builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, _10xCards.Services.ClientAuthenticationStateProvider>();
-	
-	// Add cascading authentication state for Blazor components
-	builder.Services.AddCascadingAuthenticationState();
+		// Register services
+		builder.Services.AddScoped<_10xCards.Services.IAuthService, _10xCards.Services.AuthService>();
+		builder.Services.AddScoped<_10xCards.Services.IFlashcardService, _10xCards.Services.FlashcardService>();
+		builder.Services.AddScoped<_10xCards.Services.IGenerationService, _10xCards.Services.GenerationService>();
 
-	// Register OpenRouter AI service with HttpClient
-	builder.Services.AddHttpClient<_10xCards.Services.IOpenRouterService, _10xCards.Services.OpenRouterService>(client => {
-		client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
-		client.Timeout = TimeSpan.FromSeconds(30);
-	});
+		// Register client-side authentication services
+		builder.Services.AddScoped<_10xCards.Services.IClientAuthenticationService, _10xCards.Services.ClientAuthenticationService>();
+		builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, _10xCards.Services.ClientAuthenticationStateProvider>();
 
-	// Register ChatGPT AI service with HttpClient
-	builder.Services.AddHttpClient<_10xCards.Services.IChatGptService, _10xCards.Services.ChatGptService>(client => {
-		client.BaseAddress = new Uri("https://api.openai.com/v1/");
-		client.Timeout = TimeSpan.FromSeconds(30);
-	});
+		// Add cascading authentication state for Blazor components
+		builder.Services.AddCascadingAuthenticationState();
 
-	var app = builder.Build();
+		// Register OpenRouter AI service with HttpClient
+		builder.Services.AddHttpClient<_10xCards.Services.IOpenRouterService, _10xCards.Services.OpenRouterService>(client => {
+			client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
+			client.Timeout = TimeSpan.FromSeconds(30);
+		});
+
+		// Register ChatGPT AI service with HttpClient
+		builder.Services.AddHttpClient<_10xCards.Services.IChatGptService, _10xCards.Services.ChatGptService>(client => {
+			client.BaseAddress = new Uri("https://api.openai.com/v1/");
+			client.Timeout = TimeSpan.FromSeconds(30);
+		});
+
+		var app = builder.Build();
 
 		app.MigrateDatabase();
 
 		// Global exception handler middleware
 		app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseHsts();
-        }
-		
+		if (!app.Environment.IsDevelopment()) {
+			app.UseHsts();
+		}
+
 
 		app.UseHttpsRedirection();
 
 		app.UseAuthentication();
 		app.UseAuthorization();
 
-        app.UseAntiforgery();
+		app.UseAntiforgery();
 
-	// Map API endpoints
-	app.MapAuthEndpoints();
-	app.MapFlashcardEndpoints();
-	app.MapGenerationEndpoints();
+		// Map API endpoints
+		app.MapAuthEndpoints();
+		app.MapFlashcardEndpoints();
+		app.MapGenerationEndpoints();
 
-    app.MapStaticAssets();
-        app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode();
+		app.MapStaticAssets();
+		app.MapRazorComponents<App>()
+			.AddInteractiveServerRenderMode();
 
-        app.Run();
-    }
+		app.Run();
+	}
 }

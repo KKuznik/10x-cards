@@ -16,13 +16,13 @@ public class DatabaseFixture : IDisposable {
 	public DatabaseFixture() {
 		// Create unique database name for each test run to avoid conflicts
 		var databaseName = $"TestDatabase_{Guid.NewGuid()}";
-		
+
 		var options = new DbContextOptionsBuilder<ApplicationDbContext>()
 			.UseInMemoryDatabase(databaseName)
 			.Options;
 
 		Context = new ApplicationDbContext(options);
-		
+
 		// Ensure database is created
 		Context.Database.EnsureCreated();
 	}
@@ -70,7 +70,7 @@ public class DatabaseFixture : IDisposable {
 		}
 
 		Context.SaveChanges();
-		
+
 		// Detach all tracked entities to avoid conflicts in tests
 		Context.ChangeTracker.Clear();
 	}

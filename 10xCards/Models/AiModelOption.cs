@@ -3,8 +3,7 @@ namespace _10xCards.Models;
 /// <summary>
 /// Represents an AI model option for flashcard generation
 /// </summary>
-public class AiModelOption
-{
+public class AiModelOption {
 	/// <summary>
 	/// Model identifier/key used in API calls
 	/// </summary>
@@ -29,8 +28,7 @@ public class AiModelOption
 /// <summary>
 /// Static configuration for available AI models
 /// </summary>
-public static class AiModelOptions
-{
+public static class AiModelOptions {
 	/// <summary>
 	/// Default/recommended AI model
 	/// </summary>
@@ -60,8 +58,7 @@ public static class AiModelOptions
 	/// <summary>
 	/// Get model display name by value
 	/// </summary>
-	public static string GetDisplayName(string modelValue)
-	{
+	public static string GetDisplayName(string modelValue) {
 		var model = AvailableModels.FirstOrDefault(m => m.Value == modelValue);
 		return model?.DisplayName ?? modelValue;
 	}
@@ -69,8 +66,7 @@ public static class AiModelOptions
 	/// <summary>
 	/// Check if model value is valid
 	/// </summary>
-	public static bool IsValidModel(string modelValue)
-	{
+	public static bool IsValidModel(string modelValue) {
 		return AvailableModels.Any(m => m.Value == modelValue);
 	}
 }

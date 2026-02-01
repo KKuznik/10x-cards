@@ -49,13 +49,13 @@ public sealed class FlashcardService : IFlashcardService {
 				baseQuery = baseQuery.Where(f => f.Source == query.Source);
 			}
 
-		// Optional search filter (case-insensitive search in front and back)
-		if (!string.IsNullOrEmpty(query.Search)) {
-			var searchLower = query.Search.ToLower();
-			baseQuery = baseQuery.Where(f =>
-				f.Front.ToLower().Contains(searchLower) ||
-				f.Back.ToLower().Contains(searchLower));
-		}
+			// Optional search filter (case-insensitive search in front and back)
+			if (!string.IsNullOrEmpty(query.Search)) {
+				var searchLower = query.Search.ToLower();
+				baseQuery = baseQuery.Where(f =>
+					f.Front.ToLower().Contains(searchLower) ||
+					f.Back.ToLower().Contains(searchLower));
+			}
 
 			// Get total count for pagination metadata
 			var totalItems = await baseQuery.CountAsync(cancellationToken);
@@ -109,8 +109,7 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Happy path: return success response
 			return Result<FlashcardsListResponse>.Success(response);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Failed to list flashcards. UserId: {UserId}, Page: {Page}, PageSize: {PageSize}",
 				userId, query.Page, query.PageSize);
@@ -168,8 +167,7 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Happy path: return success
 			return Result<FlashcardResponse>.Success(response);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Error retrieving flashcard. UserId: {UserId}, FlashcardId: {FlashcardId}",
 				userId, flashcardId);
@@ -228,14 +226,12 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Happy path: return success
 			return Result<FlashcardResponse>.Success(response);
-		}
-		catch (DbUpdateException ex) {
+		} catch (DbUpdateException ex) {
 			_logger.LogError(ex,
 				"Database error while creating flashcard. UserId: {UserId}", userId);
 			return Result<FlashcardResponse>.Failure(
 				"An error occurred while saving the flashcard");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Unexpected error while creating flashcard. UserId: {UserId}", userId);
 			return Result<FlashcardResponse>.Failure(
@@ -255,19 +251,19 @@ public sealed class FlashcardService : IFlashcardService {
 				return Result<CreateFlashcardsBatchResponse>.Failure("Invalid user ID");
 			}
 
-		// Guard clause: validate request
-		if (request is null) {
-			_logger.LogWarning("CreateFlashcardsBatchAsync called with null request. UserId: {UserId}", userId);
-			return Result<CreateFlashcardsBatchResponse>.Failure("Request is required");
-		}
+			// Guard clause: validate request
+			if (request is null) {
+				_logger.LogWarning("CreateFlashcardsBatchAsync called with null request. UserId: {UserId}", userId);
+				return Result<CreateFlashcardsBatchResponse>.Failure("Request is required");
+			}
 
-		// Guard clause: validate flashcards list is not empty
-		if (request.Flashcards is null || request.Flashcards.Count == 0) {
-			_logger.LogWarning("CreateFlashcardsBatchAsync called with empty flashcards list. UserId: {UserId}", userId);
-			return Result<CreateFlashcardsBatchResponse>.Failure("At least one flashcard is required");
-		}
+			// Guard clause: validate flashcards list is not empty
+			if (request.Flashcards is null || request.Flashcards.Count == 0) {
+				_logger.LogWarning("CreateFlashcardsBatchAsync called with empty flashcards list. UserId: {UserId}", userId);
+				return Result<CreateFlashcardsBatchResponse>.Failure("At least one flashcard is required");
+			}
 
-		// Query generation with tracking (will be updated)
+			// Query generation with tracking (will be updated)
 			var generation = await _context.Generations
 				.Where(g => g.Id == request.GenerationId && g.UserId == userId)
 				.FirstOrDefaultAsync(cancellationToken);
@@ -332,15 +328,13 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Happy path: return success
 			return Result<CreateFlashcardsBatchResponse>.Success(response);
-		}
-		catch (DbUpdateException ex) {
+		} catch (DbUpdateException ex) {
 			_logger.LogError(ex,
 				"Database error while creating batch flashcards. UserId: {UserId}, GenerationId: {GenerationId}",
 				userId, request?.GenerationId);
 			return Result<CreateFlashcardsBatchResponse>.Failure(
 				"An error occurred while saving the flashcards");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Unexpected error while creating batch flashcards. UserId: {UserId}, GenerationId: {GenerationId}",
 				userId, request?.GenerationId);
@@ -385,17 +379,17 @@ public sealed class FlashcardService : IFlashcardService {
 			var trimmedFront = request.Front.Trim();
 			var trimmedBack = request.Back.Trim();
 
-		// Update flashcard properties
-		flashcard.Front = trimmedFront;
-		flashcard.Back = trimmedBack;
-		flashcard.UpdatedAt = DateTime.UtcNow;
+			// Update flashcard properties
+			flashcard.Front = trimmedFront;
+			flashcard.Back = trimmedBack;
+			flashcard.UpdatedAt = DateTime.UtcNow;
 
-		// Apply source logic: if originally 'ai-full', change to 'ai-edited'
-		if (flashcard.Source == "ai-full") {
-			flashcard.Source = "ai-edited";
-		}
+			// Apply source logic: if originally 'ai-full', change to 'ai-edited'
+			if (flashcard.Source == "ai-full") {
+				flashcard.Source = "ai-edited";
+			}
 
-		// GenerationId is preserved (no changes)
+			// GenerationId is preserved (no changes)
 
 			// Save changes
 			await _context.SaveChangesAsync(cancellationToken);
@@ -417,15 +411,13 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Happy path: return success
 			return Result<FlashcardResponse>.Success(response);
-		}
-		catch (DbUpdateException ex) {
+		} catch (DbUpdateException ex) {
 			_logger.LogError(ex,
 				"Database error while updating flashcard. UserId: {UserId}, FlashcardId: {FlashcardId}",
 				userId, flashcardId);
 			return Result<FlashcardResponse>.Failure(
 				"An error occurred while updating the flashcard");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Unexpected error while updating flashcard. UserId: {UserId}, FlashcardId: {FlashcardId}",
 				userId, flashcardId);
@@ -461,7 +453,7 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Remove flashcard from context
 			_context.Flashcards.Remove(flashcard);
-			
+
 			// Save changes to database
 			await _context.SaveChangesAsync(cancellationToken);
 
@@ -471,15 +463,13 @@ public sealed class FlashcardService : IFlashcardService {
 
 			// Happy path: return success
 			return Result<bool>.Success(true);
-		}
-		catch (DbUpdateException ex) {
+		} catch (DbUpdateException ex) {
 			_logger.LogError(ex,
 				"Database error while deleting flashcard. UserId: {UserId}, FlashcardId: {FlashcardId}",
 				userId, flashcardId);
 			return Result<bool>.Failure(
 				"An error occurred while deleting the flashcard");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Unexpected error while deleting flashcard. UserId: {UserId}, FlashcardId: {FlashcardId}",
 				userId, flashcardId);

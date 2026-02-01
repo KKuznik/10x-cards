@@ -139,8 +139,7 @@ public sealed class AuthService : IAuthService {
 			// Future enhancement: implement token blacklist
 
 			return await Task.FromResult(Result<bool>.Success(true));
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			_logger.LogError(ex,
 				"Logout operation failed. UserId: {UserId}",
 				userId);
