@@ -104,11 +104,11 @@ jobs:
 
       - name: Run E2E tests with coverage
         run: |
-          dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj `
-            --configuration Release `
-            --no-build `
-            --logger "trx;LogFileName=e2e-results.trx" `
-            --collect:"XPlat Code Coverage" `
+          dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=e2e-results.trx" \
+            --collect:"XPlat Code Coverage" \
             --results-directory ./coverage/e2e
 
       - name: Upload E2E test coverage
