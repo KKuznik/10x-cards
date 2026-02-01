@@ -4,9 +4,9 @@ namespace _10xCards.Components.Shared;
 /// Alert message types
 /// </summary>
 public enum AlertType {
-	Success,
-	Error,
-	Warning,
-	Info
+    Success,
+    Error,
+    Warning,
+    Info
 }
 

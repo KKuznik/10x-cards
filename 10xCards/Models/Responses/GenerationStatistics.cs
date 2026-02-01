@@ -5,14 +5,14 @@ namespace _10xCards.Models.Responses;
 /// Used in: GenerationsListResponse
 /// </summary>
 public sealed class GenerationStatistics {
-	public int TotalGenerations { get; set; }
-	public int TotalGenerated { get; set; }
-	public int TotalAccepted { get; set; }
+    public int TotalGenerations { get; set; }
+    public int TotalGenerated { get; set; }
+    public int TotalAccepted { get; set; }
 
-	/// <summary>
-	/// Overall acceptance rate: (TotalAccepted / TotalGenerated) * 100
-	/// Calculated in service layer
-	/// </summary>
-	public double OverallAcceptanceRate { get; set; }
+    /// <summary>
+    /// Overall acceptance rate: (TotalAccepted / TotalGenerated) * 100
+    /// Calculated in service layer
+    /// </summary>
+    public double OverallAcceptanceRate { get; set; }
 }
 

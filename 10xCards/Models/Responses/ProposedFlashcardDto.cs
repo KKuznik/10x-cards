@@ -5,7 +5,7 @@ namespace _10xCards.Models.Responses;
 /// Used in: GenerationResponse
 /// </summary>
 public sealed class ProposedFlashcardDto {
-	public string Front { get; set; } = string.Empty;
-	public string Back { get; set; } = string.Empty;
+    public string Front { get; set; } = string.Empty;
+    public string Back { get; set; } = string.Empty;
 }
 
