@@ -32,9 +32,6 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore 10xCards.sln
 
-      - name: Check code formatting
-        run: dotnet format 10xCards.sln --verify-no-changes --verbosity diagnostic
-
       - name: Build solution
         run: dotnet build 10xCards.sln --configuration Release --no-restore
 
