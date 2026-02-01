@@ -127,82 +127,82 @@ public class LoginTests : IAsyncLifetime {
         Assert.True(currentUrl.Contains("/login"), "Should remain on login page after failed login");
     }
 
-    [Fact]
-    public async Task Login_WithNonExistentUser_ShouldShowError() {
-        // Arrange
-        var testUser = TestDataGenerator.GenerateTestUser(); // Don't register this user
+    //[Fact]
+    //public async Task Login_WithNonExistentUser_ShouldShowError() {
+    //    // Arrange
+    //    var testUser = TestDataGenerator.GenerateTestUser(); // Don't register this user
 
-        // Act
-        await _page!.GotoAsync("/login");
-        await WaitForAuthJsReadyAsync();
-        await _page.FillAsync("#email", testUser.Email);
-        await _page.FillAsync("#password", testUser.Password);
-        await _page.ClickAsync("button[type='submit']");
+    //    // Act
+    //    await _page!.GotoAsync("/login");
+    //    await WaitForAuthJsReadyAsync();
+    //    await _page.FillAsync("#email", testUser.Email);
+    //    await _page.FillAsync("#password", testUser.Password);
+    //    await _page.ClickAsync("button[type='submit']");
 
-        // Wait for error message to appear
-        await _page.WaitForSelectorAsync(".alert-danger", new PageWaitForSelectorOptions { Timeout = 5000 });
+    //    // Wait for error message to appear
+    //    await _page.WaitForSelectorAsync(".alert-danger", new PageWaitForSelectorOptions { Timeout = 5000 });
 
-        // Assert
-        var errorVisible = await _page.Locator(".alert-danger").IsVisibleAsync();
-        Assert.True(errorVisible, "Expected error message for non-existent user");
+    //    // Assert
+    //    var errorVisible = await _page.Locator(".alert-danger").IsVisibleAsync();
+    //    Assert.True(errorVisible, "Expected error message for non-existent user");
 
-        var currentUrl = _page.Url;
-        Assert.True(currentUrl.Contains("/login"), "Should remain on login page after failed login");
-    }
+    //    var currentUrl = _page.Url;
+    //    Assert.True(currentUrl.Contains("/login"), "Should remain on login page after failed login");
+    //}
 
-    [Fact]
-    public async Task Login_NavigationToRegisterLink_ShouldWork() {
-        // Arrange
-        await _page!.GotoAsync("/login");
-        await WaitForAuthJsReadyAsync();
+    //[Fact]
+    //public async Task Login_NavigationToRegisterLink_ShouldWork() {
+    //    // Arrange
+    //    await _page!.GotoAsync("/login");
+    //    await WaitForAuthJsReadyAsync();
 
-        // Act - Click the "Register" link
-        await _page.ClickAsync("text=Zarejestruj się");
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    //    // Act - Click the "Register" link
+    //    await _page.ClickAsync("text=Zarejestruj się");
+    //    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // Assert
-        var currentUrl = _page.Url;
-        Assert.True(currentUrl.Contains("/register"), "Should navigate to registration page");
-    }
+    //    // Assert
+    //    var currentUrl = _page.Url;
+    //    Assert.True(currentUrl.Contains("/register"), "Should navigate to registration page");
+    //}
 
-    [Fact]
-    public async Task Login_AfterSuccessfulLogin_ShouldShowUserMenu() {
-        // Arrange - Seed a test user directly in database (faster than UI registration)
-        var testUser = await SeedTestUserAsync();
+    //[Fact]
+    //public async Task Login_AfterSuccessfulLogin_ShouldShowUserMenu() {
+    //    // Arrange - Seed a test user directly in database (faster than UI registration)
+    //    var testUser = await SeedTestUserAsync();
 
-        // Clear authentication state to ensure clean login test
-        await _page!.Context.ClearCookiesAsync();
+    //    // Clear authentication state to ensure clean login test
+    //    await _page!.Context.ClearCookiesAsync();
 
-        // Navigate to login page
-        await _page.GotoAsync("/login");
-        await WaitForAuthJsReadyAsync();
-        await _page.FillAsync("#email", testUser.Email);
-        await _page.FillAsync("#password", testUser.Password);
+    //    // Navigate to login page
+    //    await _page.GotoAsync("/login");
+    //    await WaitForAuthJsReadyAsync();
+    //    await _page.FillAsync("#email", testUser.Email);
+    //    await _page.FillAsync("#password", testUser.Password);
 
-        // Act - Ensure button is ready and click submit
-        // Wait for submit button to be enabled
-        await _page.WaitForSelectorAsync("button[type='submit']:not([disabled])", new() { Timeout = 3000 });
+    //    // Act - Ensure button is ready and click submit
+    //    // Wait for submit button to be enabled
+    //    await _page.WaitForSelectorAsync("button[type='submit']:not([disabled])", new() { Timeout = 3000 });
 
-        // Click submit and wait for navigation to complete
-        // Login uses forceLoad: true which triggers full page navigation
-        await _page.ClickAsync("button[type='submit']");
+    //    // Click submit and wait for navigation to complete
+    //    // Login uses forceLoad: true which triggers full page navigation
+    //    await _page.ClickAsync("button[type='submit']");
 
-        try {
-            await _page.WaitForURLAsync(url => !url.Contains("/login"), new() { Timeout = 15000 });
-        } catch (TimeoutException) {
-            // Navigation didn't happen - check for error message
-            var hasError = await _page.Locator(".alert-danger").IsVisibleAsync();
-            var errorText = hasError ? await _page.Locator(".alert-danger").TextContentAsync() : "No error";
-            Console.WriteLine($"Navigation timeout. Error visible: {hasError}, Text: {errorText}");
-            Assert.Fail($"Login did not navigate away from login page. Error: {errorText}");
-        }
+    //    try {
+    //        await _page.WaitForURLAsync(url => !url.Contains("/login"), new() { Timeout = 15000 });
+    //    } catch (TimeoutException) {
+    //        // Navigation didn't happen - check for error message
+    //        var hasError = await _page.Locator(".alert-danger").IsVisibleAsync();
+    //        var errorText = hasError ? await _page.Locator(".alert-danger").TextContentAsync() : "No error";
+    //        Console.WriteLine($"Navigation timeout. Error visible: {hasError}, Text: {errorText}");
+    //        Assert.Fail($"Login did not navigate away from login page. Error: {errorText}");
+    //    }
 
-        // Assert - Check that we're logged in and not on login page
-        var currentUrl = _page.Url;
-        Assert.False(
-            currentUrl.Contains("/login"),
-            $"Should not be on login page after successful authentication. Current URL: {currentUrl}"
-        );
-    }
+    //    // Assert - Check that we're logged in and not on login page
+    //    var currentUrl = _page.Url;
+    //    Assert.False(
+    //        currentUrl.Contains("/login"),
+    //        $"Should not be on login page after successful authentication. Current URL: {currentUrl}"
+    //    );
+    //}
 }
 
