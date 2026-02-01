@@ -40,7 +40,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: lint
     steps:
       - name: Checkout repository
@@ -56,11 +56,11 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          dotnet test 10xCards.Tests/10xCards.Tests.csproj \
-            --configuration Release \
-            --no-restore \
-            --logger "trx;LogFileName=test-results.trx" \
-            --collect:"XPlat Code Coverage" \
+          dotnet test 10xCards.Tests/10xCards.Tests.csproj `
+            --configuration Release `
+            --no-restore `
+            --logger "trx;LogFileName=test-results.trx" `
+            --collect:"XPlat Code Coverage" `
             --results-directory ./coverage/unit
 
       - name: Upload unit test coverage
@@ -82,7 +82,7 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: lint
     steps:
       - name: Checkout repository
@@ -104,11 +104,11 @@ jobs:
 
       - name: Run E2E tests with coverage
         run: |
-          dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj \
-            --configuration Release \
-            --no-build \
-            --logger "trx;LogFileName=e2e-results.trx" \
-            --collect:"XPlat Code Coverage" \
+          dotnet test 10xCards.E2ETests/10xCards.E2ETests.csproj `
+            --configuration Release `
+            --no-build `
+            --logger "trx;LogFileName=e2e-results.trx" `
+            --collect:"XPlat Code Coverage" `
             --results-directory ./coverage/e2e
 
       - name: Upload E2E test coverage
@@ -130,7 +130,7 @@ jobs:
 
   status-comment:
     name: PR Status Comment
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [lint, unit-tests, e2e-tests]
     if: success()
     steps:
@@ -150,33 +150,32 @@ jobs:
 
       - name: Generate coverage summary
         id: coverage
+        shell: pwsh
         run: |
           # Parse unit test coverage
-          UNIT_COVERAGE="N/A"
-          if [ -d "./coverage/unit" ]; then
-            UNIT_COVERAGE_FILE=$(find ./coverage/unit -name "coverage.cobertura.xml" -type f 2>/dev/null | head -1)
-            if [ -n "$UNIT_COVERAGE_FILE" ] && [ -f "$UNIT_COVERAGE_FILE" ]; then
-              UNIT_LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' "$UNIT_COVERAGE_FILE" | head -1)
-              if [ -n "$UNIT_LINE_RATE" ]; then
-                UNIT_COVERAGE=$(echo "scale=2; $UNIT_LINE_RATE * 100" | bc)
-              fi
-            fi
-          fi
+          $unitCoverage = "N/A"
+          $unitFile = Get-ChildItem -Path "./coverage/unit" -Filter "coverage.cobertura.xml" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($unitFile) {
+            [xml]$xml = Get-Content $unitFile.FullName
+            $lineRate = $xml.coverage.'line-rate'
+            if ($lineRate) {
+              $unitCoverage = [math]::Round([double]$lineRate * 100, 2)
+            }
+          }
           
           # Parse E2E test coverage
-          E2E_COVERAGE="N/A"
-          if [ -d "./coverage/e2e" ]; then
-            E2E_COVERAGE_FILE=$(find ./coverage/e2e -name "coverage.cobertura.xml" -type f 2>/dev/null | head -1)
-            if [ -n "$E2E_COVERAGE_FILE" ] && [ -f "$E2E_COVERAGE_FILE" ]; then
-              E2E_LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' "$E2E_COVERAGE_FILE" | head -1)
-              if [ -n "$E2E_LINE_RATE" ]; then
-                E2E_COVERAGE=$(echo "scale=2; $E2E_LINE_RATE * 100" | bc)
-              fi
-            fi
-          fi
+          $e2eCoverage = "N/A"
+          $e2eFile = Get-ChildItem -Path "./coverage/e2e" -Filter "coverage.cobertura.xml" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($e2eFile) {
+            [xml]$xml = Get-Content $e2eFile.FullName
+            $lineRate = $xml.coverage.'line-rate'
+            if ($lineRate) {
+              $e2eCoverage = [math]::Round([double]$lineRate * 100, 2)
+            }
+          }
           
-          echo "unit_coverage=$UNIT_COVERAGE" >> $GITHUB_OUTPUT
-          echo "e2e_coverage=$E2E_COVERAGE" >> $GITHUB_OUTPUT
+          echo "unit_coverage=$unitCoverage" >> $env:GITHUB_OUTPUT
+          echo "e2e_coverage=$e2eCoverage" >> $env:GITHUB_OUTPUT
 
       - name: Post PR comment
         uses: marocchino/sticky-pull-request-comment@v2
